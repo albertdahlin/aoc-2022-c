@@ -79,7 +79,7 @@ void runDay(int day, String input)
     gettimeofday(&stop, NULL);
     float time = (float)(stop.tv_sec - start.tv_sec) * 1000;
     time += (float)stop.tv_usec / 1000 - (float)start.tv_usec / 1000;
-    printf(" %10.1fms\n", time);
+    printf(" %10.2fms\n", time);
 }
 
 int main(int argc, char *argv[])
