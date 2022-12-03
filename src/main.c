@@ -7,6 +7,7 @@
 #include <Array.h>
 #include "Day1.c"
 #include "Day2.c"
+#include "Day3.c"
 
 
 String_Buffer Input_load(int day)
@@ -73,13 +74,18 @@ void runDay(int day, String input)
             Day2_solve(input);
             break;
 
+        case 3:
+            Day3_solve(input);
+            break;
+
         default:
             printf("- not implemented -");
     }
     gettimeofday(&stop, NULL);
-    float time = (float)(stop.tv_sec - start.tv_sec) * 1000;
-    time += (float)stop.tv_usec / 1000 - (float)start.tv_usec / 1000;
-    printf(" %10.2fms\n", time);
+
+    float time = (float)(stop.tv_sec - start.tv_sec) * 1e6;
+    time += (float)stop.tv_usec - (float)start.tv_usec;
+    printf(" %10.0fµs\n", time);
 }
 
 int main(int argc, char *argv[])

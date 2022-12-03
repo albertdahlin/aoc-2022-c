@@ -1,91 +1,41 @@
 #include <String.h>
-#include <Parser.h>
 #include <inttypes.h>
-
-typedef enum {
-    D2_DRAW,
-    D2_WIN,
-    D2_LOSE
-} Day2_Outcome;
-
-typedef enum {
-    D2_ROCK,
-    D2_PAPER,
-    D2_SCISSOR
-} Day2_Hand;
-
-
-Day2_Outcome Day2_outcomeOf(Day2_Hand me, Day2_Hand oponent)
-{
-    return ((me - oponent + 3) % 3);
-}
-
-
-int Day2_outcomeScore(Day2_Outcome outcome)
-{
-    return (outcome == D2_LOSE) ? 0 : 3 * outcome + 3;
-}
-
-
-int Day2_handScore(Day2_Hand hand)
-{
-    return hand + 1;
-}
-
-
-int Day2_toOutcome(uint8_t n)
-{
-    return ((n + 2) % 3);
-}
-
-
-Day2_Hand Day2_myHand(Day2_Hand oponent, Day2_Outcome outcome)
-{
-    return (outcome + oponent) % 3;
-}
-
 
 void Day2_solve(String input)
 {
-    Parser parser = Parser_fromString(input);
-    uint8_t oponent, me;
     uint64_t part1 = 0;
     uint64_t part2 = 0;
-    Day2_Outcome outcome;
-    Day2_Hand myHand;
+    int a, b;
 
-    while (!Parser_isDone(&parser)) {
-        oponent = Parser_getChar(&parser);
-        Parser_skipChar(' ', &parser);
-        me = Parser_getChar(&parser);
-        Parser_skipChar('\n', &parser);
-
-        if (parser.error > 0) {
-            printf("Invalid input");
-            return;
-        }
-
-        if (oponent < 'A' || oponent > 'C') {
-            printf("Col 1 must be A,B,C");
-            return;
-        }
-
-        if (me < 'X' || me > 'Z') {
-            printf("Col 3 must be X,Y,Z");
-            return;
-        }
+    // Assume input is correct.
+    for (size_t i = 2; i < input.length; i += 4) {
+        a = input.data[i-2];
+        b = input.data[i];
 
         // Values should be between 0-2 instead of ASCII
-        oponent -= 'A';
-        me -= 'X';
+        a -= 'A';
+        b -= 'X';
 
-        part1 += Day2_handScore(me);
-        part1 += Day2_outcomeScore(Day2_outcomeOf(me, oponent));
+        /*
+        Since there are only 9 combinations of a and b we can look up
+        the result from an array.
 
-        outcome = Day2_toOutcome(me);
-        myHand = Day2_myHand(oponent, outcome);
-        part2 += Day2_outcomeScore(outcome);
-        part2 += Day2_handScore(myHand);
+        Instead of using an array like this:
+        int array[3] = { 1, 2, 3 };
+        a = array[i];
+
+        the same result can be achieved by storing digits as an uint64 and shifting
+        them into the lower 4 bits. We also have to clear all higher bits
+        using &0xF.
+
+        a = 0x321 >> (4*i) & 0xF;
+
+        First, convert to index 0, 1 ... 8
+        */
+        a = 3*a + b;
+
+        part1 += 0x627951384 >> 4*a & 0xF;
+        part2 += 0x762951843 >> 4*a & 0xF;
     }
 
     printf("%10lu %10lu", part1, part2);
