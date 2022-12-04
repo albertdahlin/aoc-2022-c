@@ -7,7 +7,7 @@ Assumptions & rules:
 - Assume a modern x86 CPU, use any SIMD if needed.
 - Only use single threaded code.
 - Compiler is gcc, optimizations (-O3) and builtins are allowed.
-- Times should be reliable any input given by AOC.
+- Times should be reliable for any input given by AOC.
 
 Progress so far:
 - [Day 1](src/Day1.c) < 50µs

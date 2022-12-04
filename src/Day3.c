@@ -97,6 +97,7 @@ void Day3_solve(String input)
             groupMask[2] = 0;
         }
 
+        // ternary operator assignment results in fewer instructions than (n+1) % 3
         elfIdx = elfIdx == 2 ? 0 : elfIdx + 1;
         firstHalfMask = 0;
         secondHalfMask = 0;
