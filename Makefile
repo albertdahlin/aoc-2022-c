@@ -5,15 +5,15 @@ dev: build build/dev
 optimize: build build/optimized
 	build/optimized
 
-build/dev: src/main.c src/*.c lib/src/*.h
-	gcc -Wall -g -Ilib/src $< -o $@
+build/dev: src/main.c src/*.c
+	gcc -Wall -g $< -o $@
 
 build/optimized: src/main.c src/*.c
-	gcc -Wall -O3 -Ilib/src $< -o $@
+	gcc -Wall -O3 $< -o $@
 
 
 build/day-%: test/day%.c src/Day%.c
-	gcc -Wall -g -Isrc -Ilib/src $< -o $@
+	gcc -Wall -g -Isrc $< -o $@
 	$@
 
 

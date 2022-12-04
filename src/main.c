@@ -2,44 +2,64 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
+#include <assert.h>
 #include <sys/time.h>
-#include <String.h>
-#include <Array.h>
+
+#include "String.h"
 #include "Day1.c"
 #include "Day2.c"
 #include "Day3.c"
 #include "Day4.c"
 
 
-String_Buffer Input_load(int day)
+String Input_load(int day)
 {
     char filename[100];
+    String string = {0};
 
     sprintf(filename, "input/day%d.txt", day + 1);
 
-    String_Buffer str = String_fromFile(filename);
+    FILE *file = fopen(filename, "r");
 
-    return str;
+    if (file == NULL) {
+        return string;
+    }
+
+    fseek(file, 0, SEEK_END);
+    string.length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    string.data = malloc(string.length);
+    assert(string.data != NULL);
+
+    if (fread(string.data, sizeof(char), string.length, file) != string.length) {
+        free(string.data);
+        string.length = 0;
+    }
+
+    fclose(file);
+
+    return string;
 }
 
-String_Buffer *Input_loadAll(int argc, char *argv[])
+String *Input_loadAll(int argc, char *argv[])
 {
-    String_Buffer *inputs = Array_alloc(sizeof(String_Buffer), 25);
+    String *inputs = malloc(sizeof(String) * 25);
 
     for (int day = 0; day < 25; day++) {
-        Array_push(inputs, Input_load(day));
+        inputs[day] = Input_load(day);
     }
 
     return inputs;
 }
 
-void Input_freeAll(String_Buffer *inputs)
+void Input_freeAll(String *inputs)
 {
-    Array_for(inputs, day) {
-        String_free(inputs[day]);
+    for (size_t i = 0; i < 25; i++) {
+        free(inputs[i].data);
     }
 
-    Array_free(inputs);
+    free(inputs);
 }
 
 int dayFromArgs(char *argv[])
@@ -107,11 +127,11 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    String_Buffer *inputs = Input_loadAll(argc, argv);
+    String *inputs = Input_loadAll(argc, argv);
     float time = 0;
 
-    Array_for(inputs, day) {
-        input = String_fromBuffer(inputs[day]);
+    for(size_t day = 0; day < 25; day++) {
+        input = inputs[day];
         if (input.length == 0) {
             continue;
         }

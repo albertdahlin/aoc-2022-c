@@ -1,5 +1,5 @@
-#include <String.h>
 #include <inttypes.h>
+#include "String.h"
 
 
 void Day1_solve(String input)
@@ -13,6 +13,7 @@ void Day1_solve(String input)
     uint64_t largest = 0;
 
     uint8_t c;
+
 
     for (size_t i = 0; i < input.length; i++) {
         // Collect the calorie inventory for an Elf.
