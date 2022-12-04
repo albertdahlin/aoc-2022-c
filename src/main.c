@@ -8,6 +8,7 @@
 #include "Day1.c"
 #include "Day2.c"
 #include "Day3.c"
+#include "Day4.c"
 
 
 String_Buffer Input_load(int day)
@@ -59,7 +60,7 @@ int dayFromArgs(char *argv[])
     return 0;
 }
 
-void runDay(int day, String input)
+float runDay(int day, String input)
 {
     printf("Day %d: ", day);
     struct timeval start, stop;
@@ -78,6 +79,10 @@ void runDay(int day, String input)
             Day3_solve(input);
             break;
 
+        case 4:
+            Day4_solve(input);
+            break;
+
         default:
             printf("- not implemented -");
     }
@@ -86,6 +91,8 @@ void runDay(int day, String input)
     float time = (float)(stop.tv_sec - start.tv_sec) * 1e6;
     time += (float)stop.tv_usec - (float)start.tv_usec;
     printf(" %10.0fµs\n", time);
+
+    return time;
 }
 
 int main(int argc, char *argv[])
@@ -101,6 +108,7 @@ int main(int argc, char *argv[])
     }
 
     String_Buffer *inputs = Input_loadAll(argc, argv);
+    float time = 0;
 
     Array_for(inputs, day) {
         input = String_fromBuffer(inputs[day]);
@@ -108,7 +116,13 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        runDay(day + 1, input);
+        time += runDay(day + 1, input);
+    }
+
+    if (time < 1000) {
+        printf("\nTotal time: %.0fµs\n", time);
+    } else {
+        printf("\nTotal time: %.1fms\n", time / 1000);
     }
 
     Input_freeAll(inputs);

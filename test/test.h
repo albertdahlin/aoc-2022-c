@@ -1,7 +1,7 @@
-#define RUN(fn, input) \
-    printf("%s\n", input); \
+#define RUN(fn, input, p1, p2) \
+    printf("Input: %s\nResult:  ", input); \
     fn(String_fromLit(input)); \
-    printf("\n\n")
+    printf("\nCorrect: %10s %10s\n\n", p1, p2)
 
 #define EXPECT(expr, fmt, ...) \
     if (expr) { \

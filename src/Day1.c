@@ -1,37 +1,53 @@
 #include <String.h>
+#include <inttypes.h>
+
 
 void Day1_solve(String input)
 {
-    uint64_t cal = 0;
-    uint64_t elf = 0;
-    uint64_t sm = 0;
-    uint64_t md = 0;
-    uint64_t lg = 0;
+    uint64_t calories = 0;
+    uint64_t inventory = 0;
+
+    // Keep the top 3 largest calorie countes here.
+    uint64_t large = 0;
+    uint64_t larger = 0;
+    uint64_t largest = 0;
+
     uint8_t c;
 
     for (size_t i = 0; i < input.length; i++) {
-        c = input.data[i];
+        // Collect the calorie inventory for an Elf.
+        while (i < input.length) {
+            c = input.data[i];
 
-        if ('0' <= c && c <= '9') {
-            cal = cal * 10 + c - '0';
-        } else if (cal == 0) {
-            if (elf <= sm) {
-                elf = 0;
-                continue;
-            } else if (elf > lg) {
-                lg = elf;
-            } else if (elf > md) {
-                sm = md;
-                md = elf;
+            // Assume c is only digits or whitespace.
+            if (c >= '0') {
+                // c must be a digit, collect digits into an integer value.
+                calories = calories * 10 + c - '0';
+            } else if (calories == 0) {
+                // If calories is zero we have seen 2 whitespace after each other.
+                break;
             } else {
-                sm = elf;
+                // c is a whitespace
+                inventory += calories;
+                calories = 0;
             }
-            elf = 0;
-        } else {
-            elf += cal;
-            cal = 0;
+            i += 1;
         }
+
+        // Store the 3 largest values.
+        if (inventory > largest) {
+            large   = larger;
+            larger  = largest;
+            largest = inventory;
+        } else if (inventory > larger) {
+            large = larger;
+            larger = inventory;
+        } else if (inventory > large) {
+            large = inventory;
+        }
+
+        inventory = 0;
     }
 
-    printf("%10lu %10lu", lg, sm + md + lg);
+    printf("%10lu %10lu", largest, large + larger + largest);
 }

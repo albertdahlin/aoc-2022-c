@@ -2,12 +2,18 @@
 
 My goal here is to execute all 25 solutions in less than 1 second total time.
 
-- Assume input is correct.
-- Only single threaded code.
+Assumptions & rules:
+- Assume input is correct and always ends with a new line.
+- Assume a modern x86 CPU, use any SIMD if needed.
+- Only use single threaded code.
+- Compiler is gcc, optimizations (-O3) and builtins are allowed.
+- Times should be reliable any input given by AOC.
 
-- [Day 1](src/Day1.c) < 0.1ms
-- [Day 2](src/Day2.c) < 0.1ms
-- [Day 3](src/Day3.c) < 0.1ms
+Progress so far:
+- [Day 1](src/Day1.c) < 50µs
+- [Day 2](src/Day2.c) < 50µs
+- [Day 3](src/Day3.c) < 50µs
+- [Day 4](src/Day4.c) < 50µs
 
 ```
 git submodule init
