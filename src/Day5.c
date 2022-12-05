@@ -50,7 +50,9 @@ void Day5_moveMultiple(Stack *from, Stack *to, size_t count)
 void Day5_parseInitialStack(Stack *stack, int i, size_t rowLen, char *str)
 {
     uint8_t c;
+
     // Move up the column and push to the stack.
+    // Assume i is at the first create.
     while (i > 0) {
         c = str[i];
 

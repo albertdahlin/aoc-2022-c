@@ -12,15 +12,15 @@
 #include "Day4.c"
 #include "Day5.c"
 
+char tmp_buffer[1024*16];
 
-String Input_load(int day)
+String Main_loadInput(int day)
 {
-    char filename[100];
     String string = {0};
 
-    sprintf(filename, "input/day%d.txt", day + 1);
+    sprintf(tmp_buffer, "input/day%d.txt", day);
 
-    FILE *file = fopen(filename, "r");
+    FILE *file = fopen(tmp_buffer, "r");
 
     if (file == NULL) {
         return string;
@@ -28,13 +28,11 @@ String Input_load(int day)
 
     fseek(file, 0, SEEK_END);
     string.length = ftell(file);
+    assert(string.length < sizeof(tmp_buffer));
     fseek(file, 0, SEEK_SET);
+    string.data = tmp_buffer;
 
-    string.data = malloc(string.length);
-    assert(string.data != NULL);
-
-    if (fread(string.data, sizeof(char), string.length, file) != string.length) {
-        free(string.data);
+    if (fread(tmp_buffer, sizeof(char), string.length, file) != string.length) {
         string.length = 0;
     }
 
@@ -43,27 +41,7 @@ String Input_load(int day)
     return string;
 }
 
-String *Input_loadAll(int argc, char *argv[])
-{
-    String *inputs = malloc(sizeof(String) * 25);
-
-    for (int day = 0; day < 25; day++) {
-        inputs[day] = Input_load(day);
-    }
-
-    return inputs;
-}
-
-void Input_freeAll(String *inputs)
-{
-    for (size_t i = 0; i < 25; i++) {
-        free(inputs[i].data);
-    }
-
-    free(inputs);
-}
-
-int dayFromArgs(char *argv[])
+int Main_dayFromArgs(char *argv[])
 {
     char *opt = argv[1];
     int day;
@@ -81,8 +59,11 @@ int dayFromArgs(char *argv[])
     return 0;
 }
 
-float runDay(int day, String input)
+float Main_runDay(int day, String input)
 {
+    if (input.length == 0) {
+        return 0;
+    }
     printf("Day %d: ", day);
     struct timeval start, stop;
 
@@ -124,24 +105,23 @@ int main(int argc, char *argv[])
 {
     String input;
 
-    if (argc == 3) {
-        int day = dayFromArgs(argv);
+    if (argc == 2) {
+        int day = Main_dayFromArgs(argv);
+        Main_runDay(day, Main_loadInput(day));
+
+        return 0;
+    } else if (argc == 3) {
+        int day = Main_dayFromArgs(argv);
         input = (String){ argv[2], strlen(argv[2])};
-        runDay(day, input);
+        Main_runDay(day, input);
 
         return 0;
     }
 
-    String *inputs = Input_loadAll(argc, argv);
     float time = 0;
 
-    for(size_t day = 0; day < 25; day++) {
-        input = inputs[day];
-        if (input.length == 0) {
-            continue;
-        }
-
-        time += runDay(day + 1, input);
+    for (size_t day = 1; day <= 25; day++) {
+        time += Main_runDay(day, Main_loadInput(day));
     }
 
     if (time < 1000) {
@@ -149,8 +129,6 @@ int main(int argc, char *argv[])
     } else {
         printf("\nTotal time: %.1fms\n", time / 1000);
     }
-
-    Input_freeAll(inputs);
 
     return 0;
 }
