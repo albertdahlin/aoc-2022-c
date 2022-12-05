@@ -50,7 +50,6 @@ void Day5_moveMultiple(Stack *from, Stack *to, size_t count)
 void Day5_parseInitialStack(Stack *stack, int i, size_t rowLen, char *str)
 {
     uint8_t c;
-    i -= rowLen + 1;
     // Move up the column and push to the stack.
     while (i > 0) {
         c = str[i];
@@ -95,7 +94,7 @@ void Day5_solve(String input)
     }
 
     // The example data only has 3 stacks.
-    // Each stack column takes up for characters.
+    // Each stack column takes up 4 characters.
     stackCount = rowLen / 4 + 1;
 
     // Increment i to the first "1" found.
@@ -111,7 +110,7 @@ void Day5_solve(String input)
 
     // Fill stacks with their initial values.
     for (size_t stackIdx = 0; stackIdx < stackCount; stackIdx++) {
-        Day5_parseInitialStack(&part1[stackIdx], i, rowLen, input.data);
+        Day5_parseInitialStack(&part1[stackIdx], i - rowLen - 1, rowLen, input.data);
         part2[stackIdx] = part1[stackIdx];
         i += 4;
     }
@@ -122,7 +121,7 @@ void Day5_solve(String input)
         i++;
     }
 
-    // Skip to the first number.
+    // Skip over "move ", should now be at the first number.
     i += 5;
 
     uint64_t count = 0;
@@ -132,7 +131,7 @@ void Day5_solve(String input)
     // Run through all move instructions.
     while (i < input.length) {
         // Parse the first number on the row, count.
-        while (input.data[i] >= '0') {
+        while (input.data[i] != ' ') {
             count = count *10 + input.data[i] - '0';
             i++;
         }
@@ -140,7 +139,7 @@ void Day5_solve(String input)
         i += 6;
 
         // parse the second number, from.
-        while (input.data[i] >= '0') {
+        while (input.data[i] != ' ') {
             from = from *10 + input.data[i] - '0';
             i++;
         }
@@ -148,7 +147,7 @@ void Day5_solve(String input)
         i += 4;
 
         // parse the third number, to.
-        while (input.data[i] >= '0') {
+        while (input.data[i] != '\n') {
             to = to *10 + input.data[i] - '0';
             i++;
         }
