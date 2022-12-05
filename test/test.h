@@ -3,7 +3,7 @@
 #include <String.h>
 
 #define RUN(fn, input, p1, p2) \
-    printf("Input: %s\nResult:  ", input); \
+    printf("Input:\n%s\nResult:  ", input); \
     fn((String){input, sizeof(input) - 1}); \
     printf("\nCorrect: %10s %10s\n\n", p1, p2)
 

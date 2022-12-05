@@ -10,6 +10,7 @@
 #include "Day2.c"
 #include "Day3.c"
 #include "Day4.c"
+#include "Day5.c"
 
 
 String Input_load(int day)
@@ -101,6 +102,10 @@ float runDay(int day, String input)
 
         case 4:
             Day4_solve(input);
+            break;
+
+        case 5:
+            Day5_solve(input);
             break;
 
         default:
