@@ -18,9 +18,8 @@ Progress so far:
 - [Day 3](src/Day3.c) < 40µs
 - [Day 4](src/Day4.c) < 40µs
 - [Day 5](src/Day5.c) < 30µs
+- [Day 6](src/Day6.c) < 30µs
 
 ```
-git submodule init
-git submodule update
 make optimize
 ```
