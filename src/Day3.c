@@ -51,32 +51,34 @@ void Day3_solve(String input)
     uint64_t groupMask[3] = {0};
     uint64_t elfIdx = 0;
 
-    // Rucksack start index
-    size_t rsStart = 0;
-    // Rucksack length
+    // Rucksack string
+    char *rucksack = input.data;
     size_t rsLength = 0;
 
-    while (rsStart < input.length) {
+    char *end = input.data + input.length;
+
+    while (rucksack < end) {
         size_t i;
 
         // Loop through first half.
-        for (i = 0; i < input.length; i++) {
+        for (i = 0; rucksack + i*2 < end; i++) {
             // We can assume rucksack string length to be an even number.
             // If char at pos i * 2 is not a letter it must be the end of the line.
-            if (input.data[rsStart+i*2] < 'A') {
+            if (rucksack[i*2] < 'A') {
                 // Set length for next loop.
                 rsLength = i * 2;
                 break;
             }
-            c = input.data[rsStart+i];
+            c = rucksack[i];
             // Set the Nth bit from right where N = prio
             firstHalfMask |= 1UL << Day3_prio(c);
         }
 
         // i fallthough from previous loop, we continue with the second half.
-        for (; i < rsLength; i++) {
-            c = input.data[rsStart+i];
+        while (i < rsLength) {
+            c = rucksack[i];
             secondHalfMask |= 1UL << Day3_prio(c);
+            i += 1;
         }
 
         // Set group mask as a union of first and second half.
@@ -101,7 +103,7 @@ void Day3_solve(String input)
         elfIdx = elfIdx == 2 ? 0 : elfIdx + 1;
         firstHalfMask = 0;
         secondHalfMask = 0;
-        rsStart += rsLength + 1;
+        rucksack += rsLength + 1;
         rsLength = 0;
     }
 

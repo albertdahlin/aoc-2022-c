@@ -11,6 +11,7 @@
 #include "Day3.c"
 #include "Day4.c"
 #include "Day5.c"
+#include "Day6.c"
 
 char tmp_buffer[1024*16];
 
@@ -89,16 +90,20 @@ float Main_runDay(int day, String input)
             Day5_solve(input);
             break;
 
+        case 6:
+            Day6_solve(input);
+            break;
+
         default:
             printf("- not implemented -");
     }
     gettimeofday(&stop, NULL);
 
-    float time = (float)(stop.tv_sec - start.tv_sec) * 1e6;
-    time += (float)stop.tv_usec - (float)start.tv_usec;
-    printf(" %10.0fµs\n", time);
+    float elapsedTimeMicroSec = (float)(stop.tv_sec - start.tv_sec) * 1e6;
+    elapsedTimeMicroSec += (float)stop.tv_usec - (float)start.tv_usec;
+    printf(" %10.0fµs\n", elapsedTimeMicroSec);
 
-    return time;
+    return elapsedTimeMicroSec;
 }
 
 int main(int argc, char *argv[])
@@ -118,16 +123,16 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    float time = 0;
+    float elapsedTimeMicroSec = 0;
 
     for (size_t day = 1; day <= 25; day++) {
-        time += Main_runDay(day, Main_loadInput(day));
+        elapsedTimeMicroSec += Main_runDay(day, Main_loadInput(day));
     }
 
-    if (time < 1000) {
-        printf("\nTotal time: %.0fµs\n", time);
+    if (elapsedTimeMicroSec < 1000) {
+        printf("\nTotal time: %.0fµs\n", elapsedTimeMicroSec);
     } else {
-        printf("\nTotal time: %.1fms\n", time / 1000);
+        printf("\nTotal time: %.1fms\n", elapsedTimeMicroSec / 1000);
     }
 
     return 0;

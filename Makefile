@@ -9,7 +9,7 @@ build/dev: src/main.c src/*.c
 	gcc -Wall -g $< -o $@
 
 build/optimized: src/main.c src/*.c
-	gcc -Wall -O3 $< -o $@
+	gcc -msse4.2 -Wall -O3 $< -o $@
 
 
 build/day-%: test/day%.c src/Day%.c

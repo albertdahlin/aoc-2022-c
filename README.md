@@ -3,8 +3,8 @@
 My goal here is to execute all 25 solutions in less than 1 second total time.
 
 Assumptions & rules:
-- Input must be used as the string given from AOC.
-- Assume input is correct and always ends with a new line.
+- Input must be used as the string given by AOC.
+- Assume input is correct and that it always ends with a new line.
 - Program must not segfault if input is wrong.
 - Assume a modern x86 CPU, use any SIMD if needed.
 - Only use single threaded code.
