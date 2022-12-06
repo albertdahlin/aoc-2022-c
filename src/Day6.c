@@ -3,7 +3,7 @@
 
 static inline uint64_t Day6_mask(char c)
 {
-    return 1UL << (c - 'a');
+    return 1UL << (c & 0x1F);
 }
 
 static inline uint64_t Day6_countBitsOne(uint64_t n)
@@ -17,7 +17,7 @@ static inline uint64_t Day6_countBitsOne(uint64_t n)
     return c;
 }
 
-void Day6_solve(String input)
+void Day6_solve(String input, String buffer)
 {
     uint64_t part1 = 0;
     uint64_t part2 = 0;
@@ -25,18 +25,49 @@ void Day6_solve(String input)
     uint64_t mask = 0;
     char *str = input.data;
 
-    // Assume input is long and part1 answer is not found in the first 14 bytes.
-    // Assume input is only lower case.
-    for (size_t i = 13; i < input.length; i++) {
-        mask |= Day6_mask(str[i]);
+    // start at index 4.
+    size_t i = 4;
+
+    // Assume input is only lower case characters.
+    // Part 1 will always be found before part 2. If a character is repeated
+    // within the last 4 it is also repeated in the last 14.
+
+    // First we find the start-of-packet marker (part 1).
+    while (i < input.length) {
+        if (str[i] == str[i-1]) {
+            i += 3;
+            continue;
+        }
+        mask  = Day6_mask(str[i]);
         mask |= Day6_mask(str[i-1]);
         mask |= Day6_mask(str[i-2]);
         mask |= Day6_mask(str[i-3]);
 
-        if (part1 == 0 && Day6_countBitsOne(mask) == 4) {
+        if (Day6_countBitsOne(mask) == 4) {
             part1 = i + 1;
+            break;
         }
+        i++;
+    }
 
+    // We can skip ahead 10 since part 2 will check 14 previous characters.
+    i += 10;
+
+    // i fallthrugh from previous loop.
+    // Look for the start-of-message marker (part 2).
+    while (i < input.length) {
+        if (str[i] == str[i-1]) {
+            i += 13;
+            continue;
+        }
+        if (str[i] == str[i-2]) {
+            i += 12;
+            continue;
+        }
+        mask  = Day6_mask(str[i]);
+        mask |= Day6_mask(str[i-1]);
+        mask |= Day6_mask(str[i-2]);
+        mask |= Day6_mask(str[i-3]);
         mask |= Day6_mask(str[i-4]);
         mask |= Day6_mask(str[i-5]);
         mask |= Day6_mask(str[i-6]);
@@ -48,13 +79,13 @@ void Day6_solve(String input)
         mask |= Day6_mask(str[i-12]);
         mask |= Day6_mask(str[i-13]);
 
-        if (part2 == 0 && Day6_countBitsOne(mask) == 14) {
+        if (Day6_countBitsOne(mask) == 14) {
             part2 = i + 1;
+            break;
         }
-
-        mask = 0;
+        i++;
     }
 
-    printf("%10lu %10lu", part1, part2);
+    snprintf(buffer.data, buffer.length, "%10lu %10lu", part1, part2);
 }
 

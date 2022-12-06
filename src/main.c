@@ -13,15 +13,15 @@
 #include "Day5.c"
 #include "Day6.c"
 
-char tmp_buffer[1024*16];
+char tmpBuffer[1024*32];
 
 String Main_loadInput(int day)
 {
     String string = {0};
 
-    sprintf(tmp_buffer, "input/day%d.txt", day);
+    sprintf(tmpBuffer, "input/day%d.txt", day);
 
-    FILE *file = fopen(tmp_buffer, "r");
+    FILE *file = fopen(tmpBuffer, "r");
 
     if (file == NULL) {
         return string;
@@ -29,11 +29,11 @@ String Main_loadInput(int day)
 
     fseek(file, 0, SEEK_END);
     string.length = ftell(file);
-    assert(string.length < sizeof(tmp_buffer));
+    assert(string.length < sizeof(tmpBuffer));
     fseek(file, 0, SEEK_SET);
-    string.data = tmp_buffer;
+    string.data = tmpBuffer;
 
-    if (fread(tmp_buffer, sizeof(char), string.length, file) != string.length) {
+    if (fread(tmpBuffer, sizeof(char), string.length, file) != string.length) {
         string.length = 0;
     }
 
@@ -60,48 +60,85 @@ int Main_dayFromArgs(char *argv[])
     return 0;
 }
 
-float Main_runDay(int day, String input)
+float Main_runDay(int day, String input, String output)
 {
-    if (input.length == 0) {
-        return 0;
-    }
-    printf("Day %d: ", day);
     struct timeval start, stop;
 
-    gettimeofday(&start, NULL);
     switch (day) {
         case 1:
-            Day1_solve(input);
+            gettimeofday(&start, NULL);
+            Day1_solve(input, output);
+            gettimeofday(&stop, NULL);
             break;
 
         case 2:
-            Day2_solve(input);
+            gettimeofday(&start, NULL);
+            Day2_solve(input, output);
+            gettimeofday(&stop, NULL);
             break;
 
         case 3:
-            Day3_solve(input);
+            gettimeofday(&start, NULL);
+            Day3_solve(input, output);
+            gettimeofday(&stop, NULL);
             break;
 
         case 4:
-            Day4_solve(input);
+            gettimeofday(&start, NULL);
+            Day4_solve(input, output);
+            gettimeofday(&stop, NULL);
             break;
 
         case 5:
-            Day5_solve(input);
+            gettimeofday(&start, NULL);
+            Day5_solve(input, output);
+            gettimeofday(&stop, NULL);
             break;
 
         case 6:
-            Day6_solve(input);
+            gettimeofday(&start, NULL);
+            Day6_solve(input, output);
+            gettimeofday(&stop, NULL);
             break;
 
         default:
             printf("- not implemented -");
     }
-    gettimeofday(&stop, NULL);
 
     float elapsedTimeMicroSec = (float)(stop.tv_sec - start.tv_sec) * 1e6;
     elapsedTimeMicroSec += (float)stop.tv_usec - (float)start.tv_usec;
-    printf(" %10.0fµs\n", elapsedTimeMicroSec);
+
+    return elapsedTimeMicroSec;
+
+}
+
+float Main_repeatDay(int day, String input, size_t repeat)
+{
+    if (input.length == 0) {
+        return 0;
+    }
+
+    char *alignedAddress = tmpBuffer + input.length;
+
+    size_t offset = (size_t)alignedAddress % 64;
+
+    if (offset > 0) {
+        alignedAddress += 64 - offset;
+    }
+
+    String output = (String){
+        alignedAddress,
+        sizeof(tmpBuffer) - (alignedAddress - tmpBuffer)
+    };
+
+    float elapsedTimeMicroSec = 0;
+
+    for (size_t i = 0; i < repeat; i++) {
+        elapsedTimeMicroSec += Main_runDay(day, input, output);
+    }
+
+    elapsedTimeMicroSec /= repeat;
+    printf("Day %d: %.30s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
 
     return elapsedTimeMicroSec;
 }
@@ -109,16 +146,17 @@ float Main_runDay(int day, String input)
 int main(int argc, char *argv[])
 {
     String input;
+    size_t repeat = 1;
 
     if (argc == 2) {
         int day = Main_dayFromArgs(argv);
-        Main_runDay(day, Main_loadInput(day));
+        Main_repeatDay(day, Main_loadInput(day), repeat);
 
         return 0;
     } else if (argc == 3) {
         int day = Main_dayFromArgs(argv);
         input = (String){ argv[2], strlen(argv[2])};
-        Main_runDay(day, input);
+        Main_repeatDay(day, input, repeat);
 
         return 0;
     }
@@ -126,7 +164,7 @@ int main(int argc, char *argv[])
     float elapsedTimeMicroSec = 0;
 
     for (size_t day = 1; day <= 25; day++) {
-        elapsedTimeMicroSec += Main_runDay(day, Main_loadInput(day));
+        elapsedTimeMicroSec += Main_repeatDay(day, Main_loadInput(day), repeat);
     }
 
     if (elapsedTimeMicroSec < 1000) {

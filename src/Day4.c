@@ -20,7 +20,7 @@ uint64_t Day4_isOverlap(
     return (y1 >= x2 && y2 >= x1);
 }
 
-void Day4_solve(String input)
+void Day4_solve(String input, String buffer)
 {
     uint64_t part1 = 0;
     uint64_t part2 = 0;
@@ -54,6 +54,6 @@ void Day4_solve(String input)
         }
     }
 
-    printf("%10lu %10lu", part1, part2);
+    sprintf(buffer.data, "%10lu %10lu", part1, part2);
 }
 

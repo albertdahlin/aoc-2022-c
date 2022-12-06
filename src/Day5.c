@@ -64,16 +64,18 @@ void Day5_parseInitialStack(Stack *stack, int i, size_t rowLen, char *str)
     }
 }
 
-void Day5_printTopOfStacks(Stack *stacks, size_t stackCount)
+char *Day5_printTopOfStacks(char *buffer, Stack *stacks, size_t stackCount)
 {
-    printf("%*.s", 10 - (int)stackCount, "");
+    buffer += sprintf(buffer, "%*.s", 10 - (int)stackCount, "");
     for (size_t j = 0; j < stackCount; j++) {
         Stack stack = stacks[j];
-        printf("%c", stack.crates[stack.size - 1]);
+        buffer += sprintf(buffer, "%c", stack.crates[stack.size - 1]);
     }
+
+    return buffer;
 }
 
-void Day5_solve(String input)
+void Day5_solve(String input, String buffer)
 {
     uint8_t c;
 
@@ -168,8 +170,9 @@ void Day5_solve(String input)
         to = 0;
     }
 
-    Day5_printTopOfStacks(part1, stackCount);
-    printf(" ");
-    Day5_printTopOfStacks(part2, stackCount);
+    char *output = buffer.data;
+    output = Day5_printTopOfStacks(output, part1, stackCount);
+    output += sprintf(output, " ");
+    output = Day5_printTopOfStacks(output, part2, stackCount);
 }
 

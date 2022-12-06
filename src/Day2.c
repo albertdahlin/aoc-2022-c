@@ -1,7 +1,7 @@
 #include <inttypes.h>
 #include "String.h"
 
-void Day2_solve(String input)
+void Day2_solve(String input, String buffer)
 {
     uint64_t part1 = 0;
     uint64_t part2 = 0;
@@ -42,6 +42,6 @@ void Day2_solve(String input)
         part2 += 0x762951843 >> 4*i & 0xF;
     }
 
-    printf("%10lu %10lu", part1, part2);
+    sprintf(buffer.data, "%10lu %10lu", part1, part2);
 }
 

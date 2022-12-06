@@ -2,7 +2,7 @@
 #include "String.h"
 
 
-void Day1_solve(String input)
+void Day1_solve(String input, String buffer)
 {
     uint64_t calories = 0;
     uint64_t inventory = 0;
@@ -50,5 +50,5 @@ void Day1_solve(String input)
         inventory = 0;
     }
 
-    printf("%10lu %10lu", largest, large + larger + largest);
+    sprintf(buffer.data, "%10lu %10lu", largest, large + larger + largest);
 }

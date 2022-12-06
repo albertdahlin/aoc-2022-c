@@ -36,7 +36,7 @@ uint64_t Day3_countZeroBitsRight(uint64_t powerOf2)
 #endif
 }
 
-void Day3_solve(String input)
+void Day3_solve(String input, String buffer)
 {
     uint64_t part1 = 0;
     uint64_t part2 = 0;
@@ -107,6 +107,6 @@ void Day3_solve(String input)
         rsLength = 0;
     }
 
-    printf("%10lu %10lu", part1, part2);
+    sprintf(buffer.data, "%10lu %10lu", part1, part2);
 }
 
