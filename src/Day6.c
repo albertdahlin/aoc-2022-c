@@ -34,10 +34,6 @@ void Day6_solve(String input, String buffer)
 
     // First we find the start-of-packet marker (part 1).
     while (i < input.length) {
-        if (str[i] == str[i-1]) {
-            i += 3;
-            continue;
-        }
         mask  = Day6_mask(str[i]);
         mask |= Day6_mask(str[i-1]);
         mask |= Day6_mask(str[i-2]);
@@ -56,14 +52,14 @@ void Day6_solve(String input, String buffer)
     // i fallthrugh from previous loop.
     // Look for the start-of-message marker (part 2).
     while (i < input.length) {
+        // Small performance improvement.
+        // If two adjacent characters are the same we can skip ahead by 13.
+        // On my input that is quite common so this made a noticable difference.
         if (str[i] == str[i-1]) {
             i += 13;
             continue;
         }
-        if (str[i] == str[i-2]) {
-            i += 12;
-            continue;
-        }
+
         mask  = Day6_mask(str[i]);
         mask |= Day6_mask(str[i-1]);
         mask |= Day6_mask(str[i-2]);
