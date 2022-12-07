@@ -12,6 +12,7 @@
 #include "Day4.c"
 #include "Day5.c"
 #include "Day6.c"
+#include "Day7.c"
 
 char tmpBuffer[1024*32];
 
@@ -98,6 +99,12 @@ float Main_runDay(int day, String input, String output)
         case 6:
             gettimeofday(&start, NULL);
             Day6_solve(input, output);
+            gettimeofday(&stop, NULL);
+            break;
+
+        case 7:
+            gettimeofday(&start, NULL);
+            Day7_solve(input, output);
             gettimeofday(&stop, NULL);
             break;
 
