@@ -13,6 +13,7 @@
 #include "Day5.c"
 #include "Day6.c"
 #include "Day7.c"
+#include "Day8.c"
 
 char tmpBuffer[1024*32];
 
@@ -107,6 +108,13 @@ float Main_runDay(int day, String input, String output)
             Day7_solve(input, output);
             gettimeofday(&stop, NULL);
             break;
+
+        case 8:
+            gettimeofday(&start, NULL);
+            Day8_solve(input, output);
+            gettimeofday(&stop, NULL);
+            break;
+
 
         default:
             printf("- not implemented -");

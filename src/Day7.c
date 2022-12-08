@@ -1,17 +1,14 @@
 #include <inttypes.h>
+#include <stdbool.h>
 #include <assert.h>
 #include "String.h"
 
-#define appendTo(sizes, size) assert(sizes##_idx < 1024); sizes[sizes##_idx] = size; sizes##_idx++
-#define skipUntil(exp) while (!(exp) && current < end) current++
-#define skipLine() skipUntil(*current == '\n')
-#define parseInt(var) \
-    var = 0; \
-    if ('0' > *current || *current > '9') goto error; \
-    while ('0' <= *current && *current <= '9' && current < end) { \
-        var = var * 10 + *current - '0'; \
-        current++; \
-    }
+
+#define appendTo(sizes, size) \
+    assert(sizes##_idx < 1024); \
+    sizes[sizes##_idx] = size; \
+    sizes##_idx++
+
 
 typedef struct {
     size_t dircount;
@@ -42,30 +39,32 @@ Context Context_pop(Context_Stack *stack)
     return stack->stack[stack->idx];
 }
 
+
+
 void Day7_solve(String input, String buffer)
 {
     uint64_t sizes[1024] = {0};
     size_t   sizes_idx = 0;
     uint64_t filesize = 0;
-    Context ctx = {0};
+    Context  ctx = {0};
     Context_Stack stack = {0};
 
-    char *current = input.data;
+    char *cur = input.data;
     char *end = input.data + input.length;
 
     // skip first "cd /"
     skipLine();
 
-    for (; current < end; current++) {
-        if (*current == '$') {
+    for (; cur < end; cur++) {
+        if (*cur == '$') {
             // Command
             // skip to next letter, commands start with letter.
-            skipUntil(*current >= 'a');
-            if (*current == 'c') {
-                // cd
+            skipUntil(*cur >= 'a');
+            if (*cur == 'c') {
+                // "cd" starts with 'c'
                 skipLine();
 
-                if (current[-1] == '.') {
+                if (cur[-1] == '.') {
                     // cd ..
                     filesize = ctx.dirsize;
                     if (ctx.dircount == 0) {
@@ -76,19 +75,19 @@ void Day7_solve(String input, String buffer)
                     ctx.dircount -= 1;
                     ctx.dirsize += filesize;
                 } else {
-                    // cd dir
+                    // "cd dir"
                     ctx = Context_push(&stack, ctx);
                 }
 
-            } else if (*current == 'l') {
+            } else if (*cur == 'l') {
                 // ls
                 skipLine();
             }
-        } else if (*current == 'd') {
+        } else if (*cur == 'd') {
             // dir
             skipLine();
             ctx.dircount += 1;
-        } else if ('0' <= *current && *current <= '9') {
+        } else if (Char_isDigit(*cur)) {
             // file
             parseInt(filesize);
             ctx.dirsize += filesize;
@@ -134,6 +133,6 @@ void Day7_solve(String input, String buffer)
     return;
 
     error:
-    printf("Parse error at %lu, %.10s\n", current - input.data, current);
+    printf("Parse error at %lu, %.10s\n", cur - input.data, cur);
 }
 
