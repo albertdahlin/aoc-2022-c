@@ -1,12 +1,13 @@
 #include <inttypes.h>
+#include <stdio.h>
 #include "String.h"
 
-static inline uint64_t Day6_mask(char c)
+static inline uint64_t leftBy(char c)
 {
     return 1UL << (c & 0x1F);
 }
 
-static inline uint64_t Day6_countBitsOne(uint64_t n)
+static inline uint64_t countBitsOne(uint64_t n)
 {
     uint64_t c = 0;
 
@@ -34,12 +35,12 @@ void Day6_solve(String input, String buffer)
 
     // First we find the start-of-packet marker (part 1).
     while (i < input.length) {
-        mask  = Day6_mask(str[i]);
-        mask |= Day6_mask(str[i-1]);
-        mask |= Day6_mask(str[i-2]);
-        mask |= Day6_mask(str[i-3]);
+        mask  = leftBy(str[i]);
+        mask |= leftBy(str[i-1]);
+        mask |= leftBy(str[i-2]);
+        mask |= leftBy(str[i-3]);
 
-        if (Day6_countBitsOne(mask) == 4) {
+        if (countBitsOne(mask) == 4) {
             part1 = i + 1;
             break;
         }
@@ -60,22 +61,22 @@ void Day6_solve(String input, String buffer)
             continue;
         }
 
-        mask  = Day6_mask(str[i]);
-        mask |= Day6_mask(str[i-1]);
-        mask |= Day6_mask(str[i-2]);
-        mask |= Day6_mask(str[i-3]);
-        mask |= Day6_mask(str[i-4]);
-        mask |= Day6_mask(str[i-5]);
-        mask |= Day6_mask(str[i-6]);
-        mask |= Day6_mask(str[i-7]);
-        mask |= Day6_mask(str[i-8]);
-        mask |= Day6_mask(str[i-9]);
-        mask |= Day6_mask(str[i-10]);
-        mask |= Day6_mask(str[i-11]);
-        mask |= Day6_mask(str[i-12]);
-        mask |= Day6_mask(str[i-13]);
+        mask  = leftBy(str[i]);
+        mask |= leftBy(str[i-1]);
+        mask |= leftBy(str[i-2]);
+        mask |= leftBy(str[i-3]);
+        mask |= leftBy(str[i-4]);
+        mask |= leftBy(str[i-5]);
+        mask |= leftBy(str[i-6]);
+        mask |= leftBy(str[i-7]);
+        mask |= leftBy(str[i-8]);
+        mask |= leftBy(str[i-9]);
+        mask |= leftBy(str[i-10]);
+        mask |= leftBy(str[i-11]);
+        mask |= leftBy(str[i-12]);
+        mask |= leftBy(str[i-13]);
 
-        if (Day6_countBitsOne(mask) == 14) {
+        if (countBitsOne(mask) == 14) {
             part2 = i + 1;
             break;
         }

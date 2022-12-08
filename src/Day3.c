@@ -1,8 +1,9 @@
 #include <inttypes.h>
+#include <stdio.h>
 #include "String.h"
 
 
-uint64_t Day3_prio(uint8_t c)
+static uint64_t prio(uint8_t c)
 {
     /*
     if c is lower case (c >= 'a')
@@ -17,7 +18,7 @@ uint64_t Day3_prio(uint8_t c)
     return c - 38 - (c >= 'a')*58;
 }
 
-uint64_t Day3_countZeroBitsRight(uint64_t powerOf2)
+static uint64_t countZeroBitsRight(uint64_t powerOf2)
 {
 #if __GNUC__
     // Use Bit Scan Forward instructions if gcc is used.
@@ -71,13 +72,13 @@ void Day3_solve(String input, String buffer)
             }
             c = rucksack[i];
             // Set the Nth bit from right where N = prio
-            firstHalfMask |= 1UL << Day3_prio(c);
+            firstHalfMask |= 1UL << prio(c);
         }
 
         // i fallthough from previous loop, we continue with the second half.
         while (i < rsLength) {
             c = rucksack[i];
-            secondHalfMask |= 1UL << Day3_prio(c);
+            secondHalfMask |= 1UL << prio(c);
             i += 1;
         }
 
@@ -85,7 +86,7 @@ void Day3_solve(String input, String buffer)
         groupMask[elfIdx] = firstHalfMask | secondHalfMask;
 
         // prio = number of zeros to the right of the set bit.
-        part1 += Day3_countZeroBitsRight(firstHalfMask & secondHalfMask);
+        part1 += countZeroBitsRight(firstHalfMask & secondHalfMask);
 
         // If we are at Elf no 3 in our group.
         if (elfIdx == 2) {
@@ -93,7 +94,7 @@ void Day3_solve(String input, String buffer)
             groupMask[0] &= groupMask[1] & groupMask[2];
 
             // prio = number of zeros to the right of the set bit.
-            part2 += Day3_countZeroBitsRight(groupMask[0]);
+            part2 += countZeroBitsRight(groupMask[0]);
             groupMask[0] = 0;
             groupMask[1] = 0;
             groupMask[2] = 0;

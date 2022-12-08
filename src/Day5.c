@@ -9,14 +9,14 @@ typedef struct {
 } Stack;
 
 
-void Day5_push(Stack *stack, uint8_t c)
+static void push(Stack *stack, uint8_t c)
 {
     stack->crates[stack->size] = c;
     stack->size++;
 }
 
 
-uint8_t Day5_pop(Stack *stack)
+static uint8_t pop(Stack *stack)
 {
     stack->size--;
 
@@ -24,30 +24,30 @@ uint8_t Day5_pop(Stack *stack)
 }
 
 
-void Day5_moveOneByOne(Stack *from, Stack *to, size_t count)
+static void moveOneByOne(Stack *from, Stack *to, size_t count)
 {
     char c;
     while (count != 0) {
-        c = Day5_pop(from);
-        Day5_push(to, c);
+        c = pop(from);
+        push(to, c);
         count--;
     }
 }
 
 
-void Day5_moveMultiple(Stack *from, Stack *to, size_t count)
+static void moveMultiple(Stack *from, Stack *to, size_t count)
 {
     size_t n = count;
     char c;
     while (n != 0) {
         c = from->crates[from->size - n];
-        Day5_push(to, c);
+        push(to, c);
         n--;
     }
     from->size -= count;
 }
 
-void Day5_parseInitialStack(Stack *stack, int i, size_t rowLen, char *str)
+static void parseInitialStack(Stack *stack, int i, size_t rowLen, char *str)
 {
     uint8_t c;
 
@@ -59,12 +59,12 @@ void Day5_parseInitialStack(Stack *stack, int i, size_t rowLen, char *str)
         if (c == ' ') {
             break;
         }
-        Day5_push(stack, c);
+        push(stack, c);
         i -= rowLen + 1;
     }
 }
 
-char *Day5_printTopOfStacks(char *buffer, Stack *stacks, size_t stackCount)
+static char *printTopOfStacks(char *buffer, Stack *stacks, size_t stackCount)
 {
     buffer += sprintf(buffer, "%*.s", 10 - (int)stackCount, "");
     for (size_t j = 0; j < stackCount; j++) {
@@ -114,7 +114,7 @@ void Day5_solve(String input, String buffer)
 
     // Fill stacks with their initial values.
     for (size_t stackIdx = 0; stackIdx < stackCount; stackIdx++) {
-        Day5_parseInitialStack(&part1[stackIdx], i - rowLen - 1, rowLen, input.data);
+        parseInitialStack(&part1[stackIdx], i - rowLen - 1, rowLen, input.data);
         part2[stackIdx] = part1[stackIdx];
         i += 4;
     }
@@ -162,8 +162,8 @@ void Day5_solve(String input, String buffer)
         from -= 1;
         to -= 1;
 
-        Day5_moveOneByOne(&part1[from], &part1[to], count);
-        Day5_moveMultiple(&part2[from], &part2[to], count);
+        moveOneByOne(&part1[from], &part1[to], count);
+        moveMultiple(&part2[from], &part2[to], count);
 
         count = 0;
         from = 0;
@@ -171,8 +171,8 @@ void Day5_solve(String input, String buffer)
     }
 
     char *output = buffer.data;
-    output = Day5_printTopOfStacks(output, part1, stackCount);
+    output = printTopOfStacks(output, part1, stackCount);
     output += sprintf(output, " ");
-    output = Day5_printTopOfStacks(output, part2, stackCount);
+    output = printTopOfStacks(output, part2, stackCount);
 }
 

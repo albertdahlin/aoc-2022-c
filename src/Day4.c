@@ -2,7 +2,7 @@
 #include <inttypes.h>
 #include "String.h"
 
-uint64_t Day4_isContained(
+static uint64_t isContained(
     uint64_t x1,
     uint64_t y1,
     uint64_t x2,
@@ -11,7 +11,7 @@ uint64_t Day4_isContained(
     return (x1 >= x2 && y1 <= y2) || (x1 <= x2 && y1 >= y2);
 }
 
-uint64_t Day4_isOverlap(
+static uint64_t isOverlap(
     uint64_t x1,
     uint64_t y1,
     uint64_t x2,
@@ -47,8 +47,8 @@ void Day4_solve(String input, String buffer)
         } else {
             // c must be whitespace.
             // Done parsing a line, check if things overlap etc.
-            part1 += Day4_isContained(pairs[0], pairs[1], pairs[2], tmp);
-            part2 += Day4_isOverlap(pairs[0], pairs[1], pairs[2], tmp);
+            part1 += isContained(pairs[0], pairs[1], pairs[2], tmp);
+            part2 += isOverlap(pairs[0], pairs[1], pairs[2], tmp);
             tmp = 0;
             idx = 0;
         }

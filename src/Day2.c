@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <stdio.h>
 #include "String.h"
 
 void Day2_solve(String input, String buffer)

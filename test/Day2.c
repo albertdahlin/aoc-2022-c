@@ -5,6 +5,8 @@
 
 int main()
 {
+    TEST_INIT();
+
     RUN(
         Day2_solve,
         "A Y B X C Z ",

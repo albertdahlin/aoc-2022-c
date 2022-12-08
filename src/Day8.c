@@ -1,10 +1,10 @@
 #include <inttypes.h>
 #include <stdio.h>
-#include <stdbool.h>
-#include <assert.h>
 #include "String.h"
 
 
+// We use raw string input as our matrix and it contains
+// \n on each row. This would screw up the width and grid[y][x]
 #define at(x, y) grid.trees[y * grid.offsetY + x]
 
 
@@ -16,7 +16,7 @@ typedef struct {
 } Grid;
 
 
-uint64_t distanceLeft(
+static uint64_t distanceLeft(
     int x,
     int y,
     Grid grid
@@ -35,7 +35,7 @@ uint64_t distanceLeft(
     return -1;
 }
 
-uint64_t distanceRight(
+static uint64_t distanceRight(
     int x,
     int y,
     Grid grid
@@ -54,7 +54,7 @@ uint64_t distanceRight(
     return -1;
 }
 
-uint64_t distanceUp(
+static uint64_t distanceUp(
     int x,
     int y,
     Grid grid
@@ -73,7 +73,7 @@ uint64_t distanceUp(
     return -1;
 }
 
-uint64_t distanceDown(
+static uint64_t distanceDown(
     int x,
     int y,
     Grid grid
@@ -92,7 +92,7 @@ uint64_t distanceDown(
     return -1;
 }
 
-uint64_t min(uint64_t a, uint64_t b)
+static uint64_t min(uint64_t a, uint64_t b)
 {
     return (a > b) ? b : a;
 }
@@ -102,8 +102,8 @@ void Day8_solve(String input, String buffer)
     uint64_t part1 = 0;
     uint64_t part2 = 0;
 
-    size_t height = 0;
-    size_t width = 0;
+    size_t height = 99;
+    size_t width = 99;
 
     for (size_t i = 0; i < input.length; i++) {
         if (input.data[i] == '\n') {
@@ -112,15 +112,12 @@ void Day8_solve(String input, String buffer)
             break;
         }
     }
-
     Grid grid = {
         input.data,
         width,
         height,
         (height + 1)
     };
-
-    char pre = 0;
 
     for (size_t y = 0; y < grid.height; y++) {
         for (size_t x = 0; x < grid.width; x++) {

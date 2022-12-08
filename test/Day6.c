@@ -6,6 +6,8 @@
 
 int main()
 {
+    TEST_INIT();
+
     RUN(Day6_solve, "mjqjpqmgbljsphdztnvjfqwrcgsmlb\n", "7", "19");
     RUN(Day6_solve, "bvwbjplbgvbhsrlpgdmjqwftvncz\n", "5", "23");
     RUN(Day6_solve, "nppdvjthqldpwncqszvftbrmjlhg\n", "6", "23");

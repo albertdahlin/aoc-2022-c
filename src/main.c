@@ -1,19 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
 #include <string.h>
 #include <assert.h>
 #include <sys/time.h>
-
 #include "String.h"
-#include "Day1.c"
-#include "Day2.c"
-#include "Day3.c"
-#include "Day4.c"
-#include "Day5.c"
-#include "Day6.c"
-#include "Day7.c"
-#include "Day8.c"
+
+
+extern void Day1_solve(String input, String buffer);
+extern void Day2_solve(String input, String buffer);
+extern void Day3_solve(String input, String buffer);
+extern void Day4_solve(String input, String buffer);
+extern void Day5_solve(String input, String buffer);
+extern void Day6_solve(String input, String buffer);
+extern void Day7_solve(String input, String buffer);
+extern void Day8_solve(String input, String buffer);
+extern void Day9_solve(String input, String buffer);
+
 
 char tmpBuffer[1024*32];
 
@@ -115,6 +117,12 @@ float Main_runDay(int day, String input, String output)
             gettimeofday(&stop, NULL);
             break;
 
+        case 9:
+            gettimeofday(&start, NULL);
+            Day9_solve(input, output);
+            gettimeofday(&stop, NULL);
+            break;
+
 
         default:
             printf("- not implemented -");
@@ -161,7 +169,7 @@ float Main_repeatDay(int day, String input, size_t repeat)
 int main(int argc, char *argv[])
 {
     String input;
-    size_t repeat = 1;
+    size_t repeat = 100;
 
     if (argc == 2) {
         int day = Main_dayFromArgs(argv);

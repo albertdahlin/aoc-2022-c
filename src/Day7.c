@@ -1,5 +1,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <assert.h>
 #include "String.h"
 
@@ -9,6 +10,20 @@
     sizes[sizes##_idx] = size; \
     sizes##_idx++
 
+#define parseInt(var) \
+    var = 0; \
+    if (!Char_isDigit(*cur)) goto error; \
+    while (Char_isDigit(*cur) && cur < end) { \
+        var = var * 10 + *cur - '0'; \
+        cur++; \
+    }
+
+
+#define skipUntil(exp) \
+    while (!(exp) && cur < end) cur++
+
+#define skipLine() \
+    skipUntil(*cur == '\n')
 
 typedef struct {
     size_t dircount;
@@ -22,7 +37,7 @@ typedef struct {
 } Context_Stack;
 
 
-Context Context_push(Context_Stack *stack, Context ctx)
+static Context Context_push(Context_Stack *stack, Context ctx)
 {
     assert(stack->idx < 64);
     stack->stack[stack->idx] = ctx;
@@ -31,7 +46,7 @@ Context Context_push(Context_Stack *stack, Context ctx)
     return (Context){0};
 }
 
-Context Context_pop(Context_Stack *stack)
+static Context Context_pop(Context_Stack *stack)
 {
     assert(stack->idx > 0);
     stack->idx--;
