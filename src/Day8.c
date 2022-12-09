@@ -4,7 +4,8 @@
 
 
 // We use raw string input as our matrix and it contains
-// \n on each row. This would screw up the width and grid[y][x]
+// '\n' at the end of each row.
+// This would screw up the width and grid[y][x]
 #define at(x, y) grid.trees[y * grid.offsetY + x]
 
 
@@ -15,19 +16,16 @@ typedef struct {
     size_t offsetY;
 } Grid;
 
-
 static uint64_t distanceLeft(
     int x,
     int y,
     Grid grid
 ) {
     uint8_t tree = at(x, y);
-    uint64_t distance = 0;
 
     for (int i = x-1; i >= 0; i--) {
-        distance += 1;
         if (at(i, y) >= tree) {
-            return distance;
+            return x-i;
         }
     }
 
@@ -41,12 +39,10 @@ static uint64_t distanceRight(
     Grid grid
 ) {
     uint8_t tree = at(x, y);
-    uint64_t distance = 0;
 
     for (int i = x+1; i < grid.width; i++) {
-        distance += 1;
         if (at(i, y) >= tree) {
-            return distance;
+            return i - x;
         }
     }
 
@@ -60,12 +56,10 @@ static uint64_t distanceUp(
     Grid grid
 ) {
     uint8_t tree = at(x, y);
-    uint64_t distance = 0;
 
     for (int i = y-1; i >= 0; i--) {
-        distance += 1;
         if (at(x, i) >= tree) {
-            return distance;
+            return y - i;
         }
     }
 
@@ -79,12 +73,10 @@ static uint64_t distanceDown(
     Grid grid
 ) {
     uint8_t tree = at(x, y);
-    uint64_t distance = 0;
 
     for (int i = y+1; i < grid.height; i++) {
-        distance += 1;
         if (at(x, i) >= tree) {
-            return distance;
+            return i - y;
         }
     }
 
@@ -105,6 +97,7 @@ void Day8_solve(String input, String buffer)
     size_t height = 99;
     size_t width = 99;
 
+    /*
     for (size_t i = 0; i < input.length; i++) {
         if (input.data[i] == '\n') {
             width = i;
@@ -112,6 +105,7 @@ void Day8_solve(String input, String buffer)
             break;
         }
     }
+    */
     Grid grid = {
         input.data,
         width,
@@ -119,28 +113,42 @@ void Day8_solve(String input, String buffer)
         (height + 1)
     };
 
-    for (size_t y = 0; y < grid.height; y++) {
-        for (size_t x = 0; x < grid.width; x++) {
+    // Since trees on the edges are always visible we can save
+    // some time not evaulating them. We just add the number of 
+    // trees in all 4 edges to the starting value.
+    part1 = 4 * grid.width - 4;
+
+
+    for (size_t y = 1; y < grid.height - 1; y++) {
+        for (size_t x = 1; x < grid.width - 1; x++) {
+            // Get the visible distance from x,y in each direction.
+            // Value 0xFF..F is for infinity when visibility is
+            // past the edge.
             uint64_t left   = distanceLeft(x, y, grid);
             uint64_t right  = distanceRight(x, y, grid);
             uint64_t up     = distanceUp(x, y, grid);
             uint64_t down   = distanceDown(x, y, grid);
 
+            // For some reason the code runs faster if
+            // score (part2) is evaluated before visibility (part1)
             uint64_t score =
                 min(up, y)
                 * min(down, grid.height - y - 1)
                 * min(x, left)
                 * min(right, grid.width - x - 1);
 
-            uint64_t visible =
+            if (score > part2) part2 = score;
+
+            uint64_t isAnyVisible =
                 (left > x)
                 || (right > grid.width)
                 || (up > y)
                 || (down > grid.height);
 
-            part1 += visible;
+            part1 += isAnyVisible;
 
-            if (score > part2) part2 = score;
+
+
         }
     }
 

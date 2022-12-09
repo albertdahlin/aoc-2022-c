@@ -11,7 +11,7 @@ dev: build build/dev
 	build/dev $(DAY)
 
 optimize: build build/optimized
-	@build/optimized
+	@build/optimized $(DAY)
 
 build/dev: $(OBJ_DEV)
 	@gcc $^ -o $@
@@ -25,13 +25,13 @@ build/optimized: $(OBJ_OPT)
 	gcc $^ -O3 -o $@
 
 build/%.dev.o: src/%.c
-	gcc -c -Wall -g $< -o $@
+	gcc -c -masm=intel -Wall -ggdb $< -o $@
 
 build/%.opt.o: src/%.c
-	gcc -c -msse4.2 -Wall -O3 $< -o $@
+	gcc -c -masm=intel -march=native -mtune=native -Wall -O3 $< -o $@
 
 build/%.test: test/%.c src/%.c
-	@gcc -Wall -Isrc -g $< -o $@
+	@gcc -Wall -Isrc -ggdb $< -o $@
 	@$@
 
 

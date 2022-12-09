@@ -12,16 +12,17 @@ Assumptions & rules:
 - Times are averaged over multiple runs.
 
 Progress so far:
-- [Day 1](src/Day1.c) ~  10µs
+- [Day 1](src/Day1.c) ~  11µs
 - [Day 2](src/Day2.c) ~   4µs
 - [Day 3](src/Day3.c) ~  15µs
 - [Day 4](src/Day4.c) ~  13µs
 - [Day 5](src/Day5.c) ~   8µs
-- [Day 6](src/Day6.c) ~   6µs
-- [Day 7](src/Day7.c) ~  12µs
-- [Day 8](src/Day8.c) ~ 280µs
+- [Day 6](src/Day6.c) ~   8µs
+- [Day 7](src/Day7.c) ~  13µs
+- [Day 8](src/Day8.c) ~ 258µs
+- [Day 9](src/Day9.c) ~ 854µs
 
-Total time so far: 348µs
+Total time so far: 1.2ms
 ```
 make optimize
 ```

@@ -169,7 +169,7 @@ float Main_repeatDay(int day, String input, size_t repeat)
 int main(int argc, char *argv[])
 {
     String input;
-    size_t repeat = 100;
+    size_t repeat = 1;
 
     if (argc == 2) {
         int day = Main_dayFromArgs(argv);
