@@ -4,16 +4,19 @@
 #include "String.h"
 
 
+#define GRID_SIZE 256
+typedef uint8_t Grid[GRID_SIZE][GRID_SIZE];
+
 typedef struct {
-    int64_t x;
-    int64_t y;
+    int32_t x;
+    int32_t y;
 } Point;
 
 
 static Point moveTail(Point head, Point tail)
 {
-    int64_t dx = (head.x - tail.x) / 2;
-    int64_t dy = (head.y - tail.y) / 2;
+    int32_t dx = (head.x - tail.x) / 2;
+    int32_t dy = (head.y - tail.y) / 2;
 
     if (dx && dy) {
         tail.x += dx;
@@ -29,6 +32,18 @@ static Point moveTail(Point head, Point tail)
     return tail;
 }
 
+
+static inline bool isFirstVisit(Grid grid, Point point, uint64_t part)
+{
+    if (grid[point.y + GRID_SIZE / 2][point.x + GRID_SIZE / 2] & part) {
+        return false;
+    }
+
+    grid[point.y + GRID_SIZE / 2][point.x + GRID_SIZE / 2] |= part;
+
+    return true;
+}
+
 void Day9_solve(String input, String buffer)
 {
     uint64_t part1 = 0;
@@ -37,11 +52,12 @@ void Day9_solve(String input, String buffer)
     char *str = input.data;
     char dir, n1, n2;
 
-    uint8_t grid[1024][1024] = {0};
+    Grid grid = {0};
 
     uint64_t distance;
-    Point head = {0};
-    Point tails[9] = {0};
+    uint32_t dx;
+    uint32_t dy;
+    Point rope[10] = {0};
 
     for (size_t i = 3; i < input.length; i += 4) {
         dir = str[i-3];
@@ -55,46 +71,46 @@ void Day9_solve(String input, String buffer)
             i += 1;
         }
 
-        while (distance > 0) {
-            switch (dir) {
-                case 'U':
-                    head.y += 1;
-                    break;
+        dx = 0;
+        dy = 0;
+        switch (dir) {
+            case 'U':
+                dy = 1;
+                break;
 
-                case 'R':
-                    head.x += 1;
-                    break;
+            case 'R':
+                dx = 1;
+                break;
 
-                case 'D':
-                    head.y -= 1;
-                    break;
+            case 'D':
+                dy = -1;
+                break;
 
-                case 'L':
-                    head.x -= 1;
-                    break;
+            case 'L':
+                dx = -1;
+                break;
 
-                default:
-                    printf("Not a direction");
-                    goto fail;
-            }
-            distance -= 1;
-            tails[0] = moveTail(head, tails[0]);
-
-            for (size_t i = 1; i < 9; i++) {
-                tails[i] = moveTail(tails[i-1], tails[i]);
-            }
-
-            // Use first bit for part 1
-            grid[tails[0].y + 512][tails[0].x + 512] |= 1;
-            // Use second bit for part 2
-            grid[tails[8].y + 512][tails[8].x + 512] |= 2;
+            default:
+                printf("Not a direction");
+                goto fail;
         }
-    }
 
-    for (size_t y = 0; y < 1024; y++) {
-        for (size_t x = 0; x < 1024; x++) {
-            part1 += grid[y][x] & 1;
-            part2 += (grid[y][x] & 2) >> 1;
+        while (distance > 0) {
+            distance -= 1;
+            rope[0].x += dx;
+            rope[0].y += dy;
+
+            for (size_t i = 1; i < 10; i++) {
+                rope[i] = moveTail(rope[i-1], rope[i]);
+            }
+
+            if (isFirstVisit(grid, rope[1], 1)) {
+                part1 += 1;
+            }
+
+            if (isFirstVisit(grid, rope[9], 2)) {
+                part2 += 1;
+            }
         }
     }
 
@@ -102,4 +118,3 @@ void Day9_solve(String input, String buffer)
     fail:
     return;
 }
-
