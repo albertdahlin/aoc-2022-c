@@ -2,16 +2,17 @@
 
 My goal here is to execute all 25 solutions in less than 1ms total time.
 
-Assumptions & rules:
-- Input must be used as the string given by AOC. No pre-processing allowed.
+## Assumptions & rules:
+- Input must be used as the string is given to you by AOC. No pre-processing allowed.
 - Assume input is correct and that it always ends with a new line.
-- Assume a modern x86 CPU, use any SIMD if needed.
-- Only use single threaded code.
-- Compiler is gcc, optimizations (-O3) and builtins are allowed.
 - Result from both part 1 and part 2 must be printed.
 - Times are averaged over multiple runs.
+- All bets are off when it comes to hardware. Use your quantum computer, ASIC, FPGA, graphics card or whatever fancy thing you have.
 
-Progress so far:
+
+## Progress
+
+Here are some timings from my old trusty i7 desktop.
 
 | Day  | Time  |
 | ---: | ----: |
