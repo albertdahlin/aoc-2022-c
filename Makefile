@@ -5,13 +5,13 @@ TEST_SRC=$(wildcard test/*.c)
 OBJ_DEV=$(patsubst src/%.c,build/%.dev.o,$(SRC))
 OBJ_OPT=$(patsubst src/%.c,build/%.opt.o,$(SRC))
 TEST_OUT=$(patsubst test/%.c,build/%.test,$(TEST_SRC))
-DAY?=
+ARGS?=
 
 dev: build build/dev
-	build/dev $(DAY)
+	build/dev $(ARGS)
 
 optimize: build build/optimized
-	@build/optimized $(DAY)
+	@build/optimized $(ARGS)
 
 build/dev: $(OBJ_DEV)
 	@gcc $^ -o $@
@@ -19,7 +19,6 @@ build/dev: $(OBJ_DEV)
 test/%: build/%.test
 
 test: $(TEST_OUT)
-
 
 build/optimized: $(OBJ_OPT)
 	gcc $^ -O3 -o $@

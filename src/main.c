@@ -17,10 +17,32 @@ extern void Day8_solve(String input, String buffer);
 extern void Day9_solve(String input, String buffer);
 extern void Day10_solve(String input, String buffer);
 
+typedef struct {
+    int onlyDay;
+    int repeat;
+    int error;
+    char *errorv;
+    bool asMarkdown;
+} Args;
 
-char tmpBuffer[1024*32];
+enum Args_Expected {
+    NOTHING,
+    SHOULD_BE_DAY,
+    SHOULD_BE_REPEAT
+};
 
-String Main_loadInput(int day)
+enum Args_Error {
+    ERR_NONE,
+    ERR_ARG_UNKNOWN,
+    ERR_ARG_MISSING,
+    ERR_DAY,
+    ERR_REPEAT
+};
+
+
+static char tmpBuffer[1024*32];
+
+static String loadInput(int day)
 {
     String string = {0};
 
@@ -47,25 +69,7 @@ String Main_loadInput(int day)
     return string;
 }
 
-int Main_dayFromArgs(char *argv[])
-{
-    char *opt = argv[1];
-    int day;
-
-    if (opt[0] != '-') {
-        return 0;
-    }
-
-    day = atoi(&opt[1]);
-
-    if (day > 0 && day <= 25) {
-        return day;
-    }
-
-    return 0;
-}
-
-float Main_runDay(int day, String input, String output)
+static float runDay(int day, String input, String output)
 {
     struct timeval start, stop;
 
@@ -142,7 +146,143 @@ float Main_runDay(int day, String input, String output)
 
 }
 
-float Main_repeatDay(int day, String input, size_t repeat)
+
+static Args parseArgs(int argc, char *argv[])
+{
+    Args args = {0};
+
+    args.onlyDay    = 0;
+    args.repeat     = 1;
+    args.error      = ERR_NONE;
+    args.asMarkdown = false;
+
+    enum Args_Expected expected = NOTHING;
+
+    for (int i = 1; i < argc; i++) {
+        char *arg = argv[i];
+        args.errorv = arg;
+
+        if (arg[0] == '-') {
+            switch (arg[1]) {
+                case 'd':
+                    expected = SHOULD_BE_DAY;
+                    break;
+
+                case 'r':
+                    expected = SHOULD_BE_REPEAT;
+                    break;
+
+                case 'm':
+                    args.asMarkdown = true;
+                    break;
+
+                default:
+                    args.error = ERR_ARG_UNKNOWN;
+            }
+        } else {
+            switch (expected) {
+                case NOTHING:
+                    args.error = ERR_ARG_UNKNOWN;
+                    break;
+
+                case SHOULD_BE_DAY:
+                    int day = atoi(arg);
+                    if (day > 0 && day <= 25) {
+                        args.onlyDay = day;
+                    } else {
+                        args.error = ERR_DAY;
+                    }
+                    expected = NOTHING;
+
+                    break;
+
+                case SHOULD_BE_REPEAT:
+                    int repeat = atoi(arg);
+                    if (repeat > 0) {
+                        args.repeat = repeat;
+                    } else {
+                        args.error = ERR_REPEAT;
+                    }
+                    expected = NOTHING;
+
+                    break;
+                    break;
+            }
+        }
+    }
+
+    if (expected) {
+        args.error = ERR_ARG_MISSING;
+    }
+
+    return args;
+}
+
+static void printError(Args args)
+{
+    switch (args.error) {
+        case ERR_NONE:
+            printf("WTF, this should never happen.\n");
+            break;
+
+        case ERR_ARG_UNKNOWN:
+            printf("Unknown arg: %s\n", args.errorv);
+            break;
+
+        case ERR_ARG_MISSING:
+            printf("Missing value for: %s\n", args.errorv);
+            break;
+
+        case ERR_DAY:
+            printf("Invalid value for day: %s\n", args.errorv);
+            break;
+
+        case ERR_REPEAT:
+            printf("Invalid value for repeat: %s\n", args.errorv);
+            break;
+    }
+}
+static void printHeader(Args args)
+{
+    if (args.asMarkdown) {
+        printf("|  Day |    Time |\n");
+        printf("| ---: | ------: |\n");
+    }
+}
+
+static void printFooter(Args args, float elapsedTimeMicroSec)
+{
+    if (args.asMarkdown) {
+        printf("|  Sum |  %.0fµs |\n", elapsedTimeMicroSec);
+        return;
+    } else {
+        if (elapsedTimeMicroSec < 1000) {
+            printf("\nTotal time: %.0fµs", elapsedTimeMicroSec);
+        } else {
+            printf("\nTotal time: %.1fms", elapsedTimeMicroSec / 1000);
+        }
+    }
+
+    if (args.repeat > 1) {
+        printf(" (average from %d runs)", args.repeat);
+    }
+    printf("\n");
+}
+
+static void printDay(Args args, int day, String output, float elapsedTimeMicroSec)
+{
+    if (args.asMarkdown) {
+        if (day > 9) {
+            printf("| [%d] | %5.0fµs |\n", day, elapsedTimeMicroSec);
+        } else {
+            printf("|  [%d] | %5.0fµs |\n", day, elapsedTimeMicroSec);
+        }
+    } else {
+        printf("Day %2d: %.20s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
+    }
+}
+
+static float repeatDay(int day, String input, Args args)
 {
     if (input.length == 0) {
         return 0;
@@ -163,45 +303,42 @@ float Main_repeatDay(int day, String input, size_t repeat)
 
     float elapsedTimeMicroSec = 0;
 
-    for (size_t i = 0; i < repeat; i++) {
-        elapsedTimeMicroSec += Main_runDay(day, input, output);
+    for (size_t i = 0; i < args.repeat; i++) {
+        elapsedTimeMicroSec += runDay(day, input, output);
     }
 
-    elapsedTimeMicroSec /= repeat;
-    printf("Day %2d: %.1000s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
+    elapsedTimeMicroSec /= args.repeat;
+
+    printDay(args, day, output, elapsedTimeMicroSec);
+
 
     return elapsedTimeMicroSec;
 }
 
 int main(int argc, char *argv[])
 {
-    String input;
-    size_t repeat = 1;
+    Args args = parseArgs(argc, argv);
 
-    if (argc == 2) {
-        int day = Main_dayFromArgs(argv);
-        Main_repeatDay(day, Main_loadInput(day), repeat);
+    if (args.error) {
+        printError(args);
+        return 1;
+    }
 
-        return 0;
-    } else if (argc == 3) {
-        int day = Main_dayFromArgs(argv);
-        input = (String){ argv[2], strlen(argv[2])};
-        Main_repeatDay(day, input, repeat);
+    if (args.onlyDay > 0) {
+        repeatDay(args.onlyDay, loadInput(args.onlyDay), args);
 
         return 0;
     }
 
     float elapsedTimeMicroSec = 0;
 
+    printHeader(args);
+
     for (size_t day = 1; day <= 25; day++) {
-        elapsedTimeMicroSec += Main_repeatDay(day, Main_loadInput(day), repeat);
+        elapsedTimeMicroSec += repeatDay(day, loadInput(day), args);
     }
 
-    if (elapsedTimeMicroSec < 1000) {
-        printf("\nTotal time: %.0fµs\n", elapsedTimeMicroSec);
-    } else {
-        printf("\nTotal time: %.1fms\n", elapsedTimeMicroSec / 1000);
-    }
+    printFooter(args, elapsedTimeMicroSec);
 
     return 0;
 }
