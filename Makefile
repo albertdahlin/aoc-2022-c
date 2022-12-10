@@ -8,10 +8,8 @@ TEST_OUT=$(patsubst test/%.c,build/%.test,$(TEST_SRC))
 ARGS?=
 
 dev: build build/dev
-	build/dev $(ARGS)
 
-optimize: build build/optimized
-	@build/optimized $(ARGS)
+opt: build build/opt
 
 build/dev: $(OBJ_DEV)
 	@gcc $^ -o $@
@@ -20,18 +18,18 @@ test/%: build/%.test
 
 test: $(TEST_OUT)
 
-build/optimized: $(OBJ_OPT)
+build/opt: $(OBJ_OPT)
 	gcc $^ -O3 -o $@
 
 build/%.dev.o: src/%.c
-	gcc -c -masm=intel -Wall -ggdb $< -o $@
+	gcc -c -Wall -ggdb $< -o $@
 
 build/%.opt.o: src/%.c
-	gcc -c -masm=intel -march=native -mtune=native -Wall -O3 $< -o $@
+	gcc -c -Wall -O3 $< -o $@
 
 build/%.test: test/%.c src/%.c
-	@gcc -Wall -Isrc -ggdb $< -o $@
-	@$@
+	gcc -Wall -Isrc -ggdb $< -o $@
+	$@
 
 
 build:

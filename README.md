@@ -3,16 +3,18 @@
 My goal here is to execute all 25 solutions in less than 1ms total time.
 
 ## Assumptions & rules:
+
 - Input must be used as the string is given to you by AOC. No pre-processing allowed.
-- Assume input is correct and that it always ends with a new line.
+- You can assume the input is correctly formated and that it always ends with a new line.
+- Your program must print the correct result from other peoples input aswell (cheater).
 - Result from both part 1 and part 2 must be printed.
-- Times are averaged over multiple runs.
+- Times can be averaged over multiple runs.
 - All bets are off when it comes to hardware. Use your quantum computer, ASIC, FPGA, graphics card or whatever fancy thing you have.
 
 
 ## Progress
 
-Here are some timings from my old trusty i7 desktop.
+Here are some timings from my old trusty 2012 i7 (3770K) desktop.
 
 | Day  | Time  |
 | ---: | ----: |
@@ -28,8 +30,17 @@ Here are some timings from my old trusty i7 desktop.
 | [10] |   1µs |
 | Sum  | 629µs |
 
+## Run it
+
+- I've only tested this on Linux with GCC. I leave no guarantees that it will work on other systems.
+
+Compile
 ```
-make optimize
+make opt
+```
+Run
+```
+./build/opt
 ```
 
 [1]: src/Day1.c
