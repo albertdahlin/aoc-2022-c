@@ -16,19 +16,19 @@ My goal here is to execute all 25 solutions in less than 1ms total time.
 
 Here are some timings from my old trusty 2012 i7 (3770K) desktop.
 
-| Day  | Time  |
-| ---: | ----: |
-|  [1] |  11µs |
-|  [2] |   4µs |
-|  [3] |  14µs |
-|  [4] |  13µs |
-|  [5] |   8µs |
-|  [6] |   7µs |
-|  [7] |  13µs |
-|  [8] | 257µs |
-|  [9] | 302µs |
-| [10] |   1µs |
-| Sum  | 629µs |
+|  Day |    Time |
+| ---: | ------: |
+|  [1] |    10µs |
+|  [2] |     4µs |
+|  [3] |    15µs |
+|  [4] |    13µs |
+|  [5] |     8µs |
+|  [6] |    15µs |
+|  [7] |    12µs |
+|  [8] |    57µs |
+|  [9] |   303µs |
+| [10] |     1µs |
+|  Sum |   438µs |
 
 ## Run it
 

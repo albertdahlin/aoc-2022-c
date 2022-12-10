@@ -69,9 +69,10 @@ static String loadInput(int day)
     return string;
 }
 
-static float runDay(int day, String input, String output)
+static float runDay(int day, String input, String output, Args args)
 {
     struct timeval start, stop;
+    memset(output.data, 0, output.length);
 
     switch (day) {
         case 1:
@@ -278,7 +279,7 @@ static void printDay(Args args, int day, String output, float elapsedTimeMicroSe
             printf("|  [%d] | %5.0fµs |\n", day, elapsedTimeMicroSec);
         }
     } else {
-        printf("Day %2d: %.20s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
+        printf("Day %2d: %.30s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
     }
 }
 
@@ -304,13 +305,12 @@ static float repeatDay(int day, String input, Args args)
     float elapsedTimeMicroSec = 0;
 
     for (size_t i = 0; i < args.repeat; i++) {
-        elapsedTimeMicroSec += runDay(day, input, output);
+        elapsedTimeMicroSec += runDay(day, input, output, args);
     }
 
     elapsedTimeMicroSec /= args.repeat;
 
     printDay(args, day, output, elapsedTimeMicroSec);
-
 
     return elapsedTimeMicroSec;
 }
@@ -330,6 +330,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+
     float elapsedTimeMicroSec = 0;
 
     printHeader(args);
@@ -337,6 +338,7 @@ int main(int argc, char *argv[])
     for (size_t day = 1; day <= 25; day++) {
         elapsedTimeMicroSec += repeatDay(day, loadInput(day), args);
     }
+
 
     printFooter(args, elapsedTimeMicroSec);
 

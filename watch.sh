@@ -6,6 +6,6 @@ echo -e "\n\e[32m*** WATCH ***\e[0m\n"
 make $1
 
 if [ ! $1 = "test" ]; then
-  build/$1 $2 $3 $4
+  build/$1 $2 $3 $4 $5 $6
 fi
 done
