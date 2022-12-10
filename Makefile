@@ -1,5 +1,5 @@
 MAKEFLAGS += --no-builtin-rules
-MAKEFLAGS += --no-builtin-variables
+CFLAGS=-Wall
 SRC=$(wildcard src/*.c)
 TEST_SRC=$(wildcard test/*.c)
 OBJ_DEV=$(patsubst src/%.c,build/%.dev.o,$(SRC))
@@ -12,23 +12,21 @@ dev: build build/dev
 opt: build build/opt
 
 build/dev: $(OBJ_DEV)
-	@gcc $^ -o $@
-
-test/%: build/%.test
+	@$(CC) $^ -o $@
 
 test: $(TEST_OUT)
 
 build/opt: $(OBJ_OPT)
-	gcc $^ -O3 -o $@
+	$(CC) $(CFLAGS) -O3 $^ -o $@
 
 build/%.dev.o: src/%.c
-	gcc -c -Wall -ggdb $< -o $@
+	$(CC) $(CFLAGS) -c -ggdb $< -o $@
 
 build/%.opt.o: src/%.c
-	gcc -c -Wall -O3 $< -o $@
+	$(CC) $(CFLAGS) -c -O3 $< -o $@
 
 build/%.test: test/%.c src/%.c
-	gcc -Wall -Isrc -ggdb $< -o $@
+	$(CC) $(CFLAGS) -Isrc -ggdb $< -o $@
 	$@
 
 

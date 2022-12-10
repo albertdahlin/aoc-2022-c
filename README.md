@@ -32,15 +32,25 @@ Here are some timings from my old trusty 2012 i7 (3770K) desktop.
 
 ## Run it
 
-- I've only tested this on Linux with GCC. I leave no guarantees that it will work on other systems.
+I've only tested this on Linux with GCC.
+I leave no guarantees that it will work on other systems.
 
 Compile
 ```
-make opt
+make dev # development
+make opt # optimized build
 ```
+
 Run
 ```
 ./build/opt
+```
+You can put your input in the `input/dayN.txt` files.
+
+Run every solution 10,000 times and average the execution time.
+This is how I measure the times in the table above.
+```
+./build/opt -r 10000 -m
 ```
 
 [1]: src/Day1.c
