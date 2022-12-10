@@ -168,7 +168,7 @@ float Main_repeatDay(int day, String input, size_t repeat)
     }
 
     elapsedTimeMicroSec /= repeat;
-    printf("Day %d: %.1000s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
+    printf("Day %2d: %.1000s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
 
     return elapsedTimeMicroSec;
 }
