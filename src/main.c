@@ -15,6 +15,7 @@ extern void Day6_solve(String input, String buffer);
 extern void Day7_solve(String input, String buffer);
 extern void Day8_solve(String input, String buffer);
 extern void Day9_solve(String input, String buffer);
+extern void Day10_solve(String input, String buffer);
 
 
 char tmpBuffer[1024*32];
@@ -123,6 +124,12 @@ float Main_runDay(int day, String input, String output)
             gettimeofday(&stop, NULL);
             break;
 
+        case 10:
+            gettimeofday(&start, NULL);
+            Day10_solve(input, output);
+            gettimeofday(&stop, NULL);
+            break;
+
 
         default:
             printf("- not implemented -");
@@ -161,7 +168,7 @@ float Main_repeatDay(int day, String input, size_t repeat)
     }
 
     elapsedTimeMicroSec /= repeat;
-    printf("Day %d: %.30s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
+    printf("Day %d: %.1000s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
 
     return elapsedTimeMicroSec;
 }

@@ -35,11 +35,14 @@ static Point moveTail(Point head, Point tail)
 
 static inline bool isFirstVisit(Grid grid, Point point, uint64_t part)
 {
-    if (grid[point.y + GRID_SIZE / 2][point.x + GRID_SIZE / 2] & part) {
+    size_t x = point.x + GRID_SIZE / 2;
+    size_t y = point.y + GRID_SIZE / 2;
+
+    if (grid[y][x] & part) {
         return false;
     }
 
-    grid[point.y + GRID_SIZE / 2][point.x + GRID_SIZE / 2] |= part;
+    grid[y][x] |= part;
 
     return true;
 }
@@ -55,9 +58,7 @@ void Day9_solve(String input, String buffer)
     Grid grid = {0};
 
     uint64_t distance;
-    uint32_t dx;
-    uint32_t dy;
-    Point rope[10] = {0};
+    Point rope[16] = {0};
 
     for (size_t i = 3; i < input.length; i += 4) {
         dir = str[i-3];
@@ -71,8 +72,8 @@ void Day9_solve(String input, String buffer)
             i += 1;
         }
 
-        dx = 0;
-        dy = 0;
+        int32_t dx = 0;
+        int32_t dy = 0;
         switch (dir) {
             case 'U':
                 dy = 1;
