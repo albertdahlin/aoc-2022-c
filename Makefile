@@ -1,5 +1,5 @@
 MAKEFLAGS += --no-builtin-rules
-CFLAGS=-Wall
+CFLAGS=
 SRC=$(wildcard src/*.c)
 TEST_SRC=$(wildcard test/*.c)
 OBJ_DEV=$(patsubst src/%.c,build/%.dev.o,$(SRC))
@@ -23,7 +23,7 @@ build/%.dev.o: src/%.c
 	$(CC) $(CFLAGS) -c -ggdb $< -o $@
 
 build/%.opt.o: src/%.c
-	$(CC) $(CFLAGS) -c -O3 $< -o $@
+	$(CC) $(CFLAGS) -Wall -c -O3 $< -o $@
 
 build/%.test: test/%.c src/%.c
 	$(CC) $(CFLAGS) -Isrc -ggdb $< -o $@
