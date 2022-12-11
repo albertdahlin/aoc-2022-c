@@ -51,5 +51,5 @@ void Day1_solve(String input, String buffer)
         inventory = 0;
     }
 
-    sprintf(buffer.data, "%10lu %10lu", largest, large + larger + largest);
+    sprintf(buffer.data, "%12lu %12lu", largest, large + larger + largest);
 }

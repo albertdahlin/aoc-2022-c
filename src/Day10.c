@@ -94,6 +94,6 @@ void Day10_solve(String input, String buffer)
         part2[i] = result;
     }
 
-    sprintf(buffer.data, "%10lu %10.8s", part1, part2);
+    sprintf(buffer.data, "%12lu %12.8s", part1, part2);
 }
 

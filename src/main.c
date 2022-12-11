@@ -253,15 +253,15 @@ static void printError(Args args)
 static void printHeader(Args args)
 {
     if (args.asMarkdown) {
-        printf("|  Day |    Time |\n");
-        printf("| ---: | ------: |\n");
+        printf("|  Day |    Time    |\n");
+        printf("| ---: | ---------: |\n");
     }
 }
 
 static void printFooter(Args args, float elapsedTimeMicroSec)
 {
     if (args.asMarkdown) {
-        printf("|  Sum |  %.0fµs |\n", elapsedTimeMicroSec);
+        printf("|  Sum | %8.0fµs |\n", elapsedTimeMicroSec);
         return;
     } else {
         if (elapsedTimeMicroSec < 1000) {
@@ -281,9 +281,9 @@ static void printDay(Args args, int day, String output, float elapsedTimeMicroSe
 {
     if (args.asMarkdown) {
         if (day > 9) {
-            printf("| [%d] | %5.0fµs |\n", day, elapsedTimeMicroSec);
+            printf("| [%d] | %8.0fµs |\n", day, elapsedTimeMicroSec);
         } else {
-            printf("|  [%d] | %5.0fµs |\n", day, elapsedTimeMicroSec);
+            printf("|  [%d] | %8.0fµs |\n", day, elapsedTimeMicroSec);
         }
     } else {
         printf("Day %2d: %.30s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);

@@ -386,5 +386,5 @@ void Day11_solve(String input, String buffer)
 
     part2 = MonkeyList_monkeyBussinessLevel(list);
 
-    sprintf(buffer.data, "%10lu %10lu", part1, part2);
+    sprintf(buffer.data, "%12lu %12lu", part1, part2);
 }

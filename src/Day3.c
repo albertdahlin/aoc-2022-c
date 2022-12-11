@@ -108,6 +108,6 @@ void Day3_solve(String input, String buffer)
         rsLength = 0;
     }
 
-    sprintf(buffer.data, "%10lu %10lu", part1, part2);
+    sprintf(buffer.data, "%12lu %12lu", part1, part2);
 }
 
