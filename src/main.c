@@ -16,6 +16,7 @@ extern void Day7_solve(String input, String buffer);
 extern void Day8_solve(String input, String buffer);
 extern void Day9_solve(String input, String buffer);
 extern void Day10_solve(String input, String buffer);
+extern void Day11_solve(String input, String buffer);
 
 typedef struct {
     int onlyDay;
@@ -132,6 +133,12 @@ static float runDay(int day, String input, String output, Args args)
         case 10:
             gettimeofday(&start, NULL);
             Day10_solve(input, output);
+            gettimeofday(&stop, NULL);
+            break;
+
+        case 11:
+            gettimeofday(&start, NULL);
+            Day11_solve(input, output);
             gettimeofday(&stop, NULL);
             break;
 
