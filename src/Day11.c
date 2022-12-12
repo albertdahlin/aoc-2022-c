@@ -261,12 +261,8 @@ static int64_t MonkeyList_parse(MonkeyList list, String input)
 
 static MonkeyList MonkeyList_create(size_t len, String *buffer)
 {
-#if DNDEBUG
-    size_t totalSizeRequired = sizeof(Monkey) * len + sizeof(uint64_t) * MONKEY_ITEMS_CAPACITY;
-
-
-    assert(buffer->length > totalSizeRequired);
-#endif
+    size_t sizeRequired = sizeof(Monkey) * len;
+    assert(buffer->length > sizeRequired);
 
     void *address = buffer->data;
 
@@ -274,8 +270,7 @@ static MonkeyList MonkeyList_create(size_t len, String *buffer)
     list.monkey = address;
     list.length = len;
 
-    address += sizeof(Monkey) * len;
-
+    address += sizeRequired;
     buffer->data = address;
 
     return list;
