@@ -23,7 +23,7 @@ build/%.dev.o: src/%.c
 	$(CC) $(CFLAGS) -c -ggdb $< -o $@
 
 build/%.opt.o: src/%.c
-	$(CC) $(CFLAGS) -Wall -c -O3 $< -o $@
+	$(CC) $(CFLAGS) -DNDEBUG -Wall -c -O3 $< -o $@
 
 build/%.test: test/%.c src/%.c
 	$(CC) $(CFLAGS) -Isrc -ggdb $< -o $@

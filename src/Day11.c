@@ -4,180 +4,78 @@
 #include "String.h"
 
 
-#define MONKEY_ITEMS_CAPACITY 64
+#define MONKEY_ITEMS_CAPACITY 36
 #define PRIMES (2*3*5*7*11*13*17*19);
 
+typedef uint64_t Item;
 
-typedef enum Operation {
-    OP_NONE,
-    OP_ADD,
-    OP_MUL,
-    OP_SQUARE
-} Operation;
+typedef Item (*Operation_Unary)(Item);
+typedef Item (*Operation_Binary)(Item, Item);
 
-typedef struct {
-    uint64_t *items;
-    uint64_t itemsLength;
-    uint64_t inspectCount;
-    Operation operation;
-    uint64_t operationValue;
-    uint64_t testValue;
-    uint64_t whenTrue;
-    uint64_t whenFalse;
+typedef struct Monkey {
+    Item items[MONKEY_ITEMS_CAPACITY];
+    uint_fast8_t itemsLength;
+    uint_fast16_t inspectCount;
+    uint_fast8_t operationValue;
+    Operation_Binary operation;
+    Operation_Unary who;
+    struct Monkey *whenTrue;
+    struct Monkey *whenFalse;
 } Monkey;
 
-
 typedef struct {
-    Monkey *monkeys;
+    Monkey *monkey;
     size_t length;
 } MonkeyList;
 
 
-static void Monkey_pushItem(Monkey *monkey, uint64_t item)
+#define IS_DIVISIBLE_BY(N) \
+    static Item isDivisibleBy##N(Item n) { return n % N == 0; }
+
+IS_DIVISIBLE_BY(2);
+IS_DIVISIBLE_BY(3);
+IS_DIVISIBLE_BY(5);
+IS_DIVISIBLE_BY(7);
+IS_DIVISIBLE_BY(11);
+IS_DIVISIBLE_BY(13);
+IS_DIVISIBLE_BY(17);
+IS_DIVISIBLE_BY(19);
+IS_DIVISIBLE_BY(23);
+
+
+static Item opAdd(Item a, Item b)
 {
-    assert(monkey->itemsLength < MONKEY_ITEMS_CAPACITY);
+    return (a + b);
+}
+
+static Item opMul(Item a, Item b)
+{
+    return (a * b);
+}
+
+static Item opSqr(Item a, Item b)
+{
+    return (a * a);
+}
+
+static inline void Monkey_pushItem(Monkey *monkey, Item item)
+{
     monkey->items[monkey->itemsLength] = item;
     monkey->itemsLength += 1;
-}
-
-static uint64_t Monkey_newWorryLevel(Monkey *monkey, uint64_t item)
-{
-    assert(monkey->operation > 0);
-
-    switch (monkey->operation) {
-        case OP_NONE:
-            break;
-        case OP_ADD:
-            if (__builtin_uaddl_overflow(item, monkey->operationValue, &item)) {
-                assert(!"ADD OVERFLOW");
-            }
-            break;
-
-        case OP_MUL:
-            if (__builtin_umull_overflow(item, monkey->operationValue, &item)) {
-                assert(!"MUL OVERFLOW");
-            }
-            break;
-        case OP_SQUARE:
-            if (__builtin_umull_overflow(item, item, &item)) {
-                assert(!"SQUARE OVERFLOW");
-            }
-            break;
-    }
-
-    return item;
-}
-
-static void Monkey_print(Monkey *monkey)
-{
-    printf("  Items: ");
-    for (size_t i = 0; i < monkey->itemsLength; i++) {
-        printf("%lu ", monkey->items[i]);
-    }
-    printf("\n");
-    printf("  Operation: ");
-    switch (monkey->operation) {
-        case OP_NONE:
-            printf("ERROR\n");
-            break;
-        case OP_ADD:
-            printf("old + %lu\n", monkey->operationValue);
-            break;
-        case OP_MUL:
-            printf("old * %lu\n", monkey->operationValue);
-            break;
-        case OP_SQUARE:
-            printf("old * old\n");
-            break;
-    }
-    printf("  Test Value: %lu\n", monkey->testValue);
-    printf("  When true: %lu\n", monkey->whenTrue);
-    printf("  When false: %lu\n", monkey->whenFalse);
-}
-
-static void MonkeyList_print(MonkeyList list)
-{
-    for (size_t i = 0; i < list.length; i++) {
-        printf("Monkey %zu:\n", i);
-        Monkey_print(&list.monkeys[i]);
-    }
-}
-
-static void MonkeyList_throwItem(MonkeyList list, size_t to, uint64_t item)
-{
-    assert(to < list.length);
-    Monkey_pushItem(&list.monkeys[to], item);
-}
-
-static void MonkeyList_playRound1(MonkeyList list)
-{
-    for (size_t m = 0; m < list.length; m++) {
-        Monkey *monkey = &list.monkeys[m];
-        for (size_t i = 0; i < monkey->itemsLength; i++) {
-            monkey->inspectCount += 1;
-            uint64_t item = monkey->items[i];
-            item = Monkey_newWorryLevel(monkey, item);
-            item /= 3;
-
-            if ((item % monkey->testValue) == 0) {
-                MonkeyList_throwItem(list, monkey->whenTrue, item);
-            } else {
-                MonkeyList_throwItem(list, monkey->whenFalse, item);
-            }
-        }
-        monkey->itemsLength = 0;
-    }
-}
-
-static void MonkeyList_playRound2(MonkeyList list)
-{
-    for (size_t m = 0; m < list.length; m++) {
-        Monkey *monkey = &list.monkeys[m];
-        for (size_t i = 0; i < monkey->itemsLength; i++) {
-            monkey->inspectCount += 1;
-            uint64_t item = monkey->items[i];
-            item = Monkey_newWorryLevel(monkey, item);
-
-            if ((item % monkey->testValue) == 0) {
-                item = item % PRIMES;
-                MonkeyList_throwItem(list, monkey->whenTrue, item);
-            } else {
-                MonkeyList_throwItem(list, monkey->whenFalse, item);
-            }
-        }
-        monkey->itemsLength = 0;
-    }
-}
-
-static uint64_t MonkeyList_monkeyBussinessLevel(MonkeyList list)
-{
-    uint64_t largest = 0;
-    uint64_t larger = 0;
-
-    for (size_t m = 0; m < list.length; m++) {
-        uint64_t inspectCount = list.monkeys[m].inspectCount;
-        if (inspectCount > largest) {
-            larger = largest;
-            largest = inspectCount;
-        } else if (inspectCount > larger) {
-            larger = inspectCount;
-        }
-    }
-
-    return larger * largest;
 }
 
 #define CHAR str[pos]
 #define SKIP(n) pos += n; if (pos > length) return -__LINE__
 #define SKIPLEN(p) pos += (sizeof(p) - 1); if (pos > length) return -__LINE__
-#define PASSERT(exp) if (!(exp)) { \
-    printf("Parse assert failed: %s at %u\n", #exp, __LINE__); \
-    return -__LINE__; \
-}
+#define PASSERT(exp) \
+    if (!(exp)) { \
+        printf("Parse assert failed: %s at %u\n", #exp, __LINE__); \
+        return -__LINE__; \
+    }
 #define WHILE(exp) for (; (pos < length) && (exp); pos++)
 
 
-static int64_t Monkey_parse(Monkey *monkey, char *str, int64_t length)
+static int64_t Monkey_parse(MonkeyList list, Monkey *monkey, char *str, int64_t length)
 {
     int64_t pos = 0;
     monkey->itemsLength = 0;
@@ -220,9 +118,9 @@ static int64_t Monkey_parse(Monkey *monkey, char *str, int64_t length)
     PASSERT(CHAR == '*' || CHAR == '+');
 
     if (CHAR == '*') {
-        monkey->operation = OP_MUL;
+        monkey->operation = opMul;
     } else if (CHAR == '+') {
-        monkey->operation = OP_ADD;
+        monkey->operation = opAdd;
     }
 
     // Skip to number or old after "* 12"
@@ -232,7 +130,7 @@ static int64_t Monkey_parse(Monkey *monkey, char *str, int64_t length)
     uint64_t num = 0;
 
     if (CHAR == 'o') {
-        monkey->operation = OP_SQUARE;
+        monkey->operation = opSqr;
         // Skip rest of "old"
         SKIP(2);
     } else {
@@ -269,7 +167,46 @@ static int64_t Monkey_parse(Monkey *monkey, char *str, int64_t length)
         SKIP(1);
     }
 
-    monkey->testValue = num;
+    switch (num) {
+        case 2:
+            monkey->who = isDivisibleBy2;
+            break;
+        case 3:
+            monkey->who = isDivisibleBy3;
+            break;
+
+        case 5:
+            monkey->who = isDivisibleBy5;
+            break;
+
+        case 7:
+            monkey->who = isDivisibleBy7;
+            break;
+
+        case 11:
+            monkey->who = isDivisibleBy11;
+            break;
+
+        case 13:
+            monkey->who = isDivisibleBy13;
+            break;
+
+        case 17:
+            monkey->who = isDivisibleBy17;
+            break;
+
+        case 19:
+            monkey->who = isDivisibleBy19;
+            break;
+
+        case 23:
+            monkey->who = isDivisibleBy23;
+            break;
+
+        default:
+            printf("Sorry, %ld does not work\n", num);
+            return -100;
+    }
 
     // skip nl to next row
     PASSERT(CHAR == '\n');
@@ -280,7 +217,9 @@ static int64_t Monkey_parse(Monkey *monkey, char *str, int64_t length)
 
     PASSERT(Char_isDigit(CHAR));
 
-    monkey->whenTrue = CHAR - '0';
+    num = CHAR - '0';
+    PASSERT(num < list.length);
+    monkey->whenTrue = &list.monkey[num];
 
     // skip nl to next row.
     SKIP(1);
@@ -291,10 +230,9 @@ static int64_t Monkey_parse(Monkey *monkey, char *str, int64_t length)
     SKIPLEN("    If false: throw to monkey ");
     PASSERT(Char_isDigit(CHAR));
 
-    monkey->whenFalse = CHAR - '0';
-
-    PASSERT(monkey->testValue > 0);
-    PASSERT(monkey->operation > 0);
+    num = CHAR - '0';
+    PASSERT(num < list.length);
+    monkey->whenFalse = &list.monkey[num];
 
     return pos;
 }
@@ -305,8 +243,8 @@ static int64_t MonkeyList_parse(MonkeyList list, String input)
     int64_t len = input.length;
 
     for (size_t m = 0; m < list.length; m++) {
-        Monkey *monkey = &list.monkeys[m];
-        int64_t parsedSize = Monkey_parse(monkey, str, len);
+        Monkey *monkey = &list.monkey[m];
+        int64_t parsedSize = Monkey_parse(list, monkey, str, len);
         if (parsedSize > 0) {
             parsedSize += 3;
             str += parsedSize;
@@ -323,29 +261,92 @@ static int64_t MonkeyList_parse(MonkeyList list, String input)
 
 static MonkeyList MonkeyList_create(size_t len, String *buffer)
 {
+#if DNDEBUG
     size_t totalSizeRequired = sizeof(Monkey) * len + sizeof(uint64_t) * MONKEY_ITEMS_CAPACITY;
 
+
     assert(buffer->length > totalSizeRequired);
+#endif
 
     void *address = buffer->data;
 
     MonkeyList list = {0};
-    list.monkeys = address;
+    list.monkey = address;
     list.length = len;
 
     address += sizeof(Monkey) * len;
-
-    for (size_t i = 0; i < len; i++) {
-        uint64_t *items = address;
-        list.monkeys[i].items = items;
-        address += sizeof(uint64_t) * MONKEY_ITEMS_CAPACITY;
-    }
 
     buffer->data = address;
 
     return list;
 }
 
+
+static uint64_t MonkeyList_monkeyBussiness(MonkeyList list)
+{
+    uint64_t largest = 0;
+    uint64_t larger = 0;
+
+    for (size_t m = 0; m < list.length; m++) {
+        uint64_t inspectCount = list.monkey[m].inspectCount;
+        if (inspectCount > largest) {
+            larger = largest;
+            largest = inspectCount;
+        } else if (inspectCount > larger) {
+            larger = inspectCount;
+        }
+    }
+
+    return larger * largest;
+}
+
+static void runPart1(Monkey *monkeys) {
+    for (uint_fast16_t round = 0; round < 20; round++) {
+        #pragma GCC unroll(8)
+        for (uint_fast8_t m = 0; m < 8; m++) {
+            Monkey *monkey = &monkeys[m];
+            monkey->inspectCount += monkey->itemsLength;
+            for (uint_fast8_t i = 0; i < monkey->itemsLength; i++) {
+                Item item = monkey->items[i];
+                item = monkey->operation(item, monkey->operationValue);
+                item /= 3;
+
+                Monkey *throwTo;
+                if (monkey->who(item)) {
+                    throwTo = monkey->whenTrue;
+                } else {
+                    throwTo = monkey->whenFalse;
+                }
+                Monkey_pushItem(throwTo, item);
+            }
+            monkey->itemsLength = 0;
+        }
+    }
+}
+
+static void runPart2(Monkey *monkeys) {
+    for (uint_fast16_t round = 0; round < 1e4; round++) {
+        #pragma GCC unroll(8)
+        for (uint_fast8_t m = 0; m < 8; m++) {
+            Monkey *monkey = &monkeys[m];
+            monkey->inspectCount += monkey->itemsLength;
+            for (uint_fast8_t i = 0; i < monkey->itemsLength; i++) {
+                Item item = monkey->items[i];
+                item = monkey->operation(item, monkey->operationValue);
+
+                Monkey *throwTo;
+                if (monkey->who(item)) {
+                    item = item % PRIMES;
+                    throwTo = monkey->whenTrue;
+                } else {
+                    throwTo = monkey->whenFalse;
+                }
+                Monkey_pushItem(throwTo, item);
+            }
+            monkey->itemsLength = 0;
+        }
+    }
+}
 
 void Day11_solve(String input, String buffer)
 {
@@ -364,27 +365,15 @@ void Day11_solve(String input, String buffer)
         return;
     }
 
-    for (size_t i = 0; i < 20; i++) {
-        MonkeyList_playRound1(list);
-    }
-
-    part1 = MonkeyList_monkeyBussinessLevel(list);
+    runPart1(list.monkey);
+    part1 = MonkeyList_monkeyBussiness(list);
 
     if (MonkeyList_parse(list, input) < 0) {
         return;
     }
 
-    uint64_t modBy = 1;
-    for (size_t m = 0; m < list.length; m++) {
-        Monkey *monkey = &list.monkeys[m];
-        modBy *= monkey->testValue;
-    }
-
-    for (size_t i = 0; i < 1e4; i++) {
-        MonkeyList_playRound2(list);
-    }
-
-    part2 = MonkeyList_monkeyBussinessLevel(list);
-
+    runPart2(list.monkey);
+    part2 = MonkeyList_monkeyBussiness(list);
     sprintf(buffer.data, "%12lu %12lu", part1, part2);
 }
+
