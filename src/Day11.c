@@ -13,14 +13,14 @@ typedef Item (*Operation_Unary)(Item);
 typedef Item (*Operation_Binary)(Item, Item);
 
 typedef struct Monkey {
-    Item items[MONKEY_ITEMS_CAPACITY];
     uint_fast8_t itemsLength;
-    uint_fast16_t inspectCount;
+    Operation_Binary inspect;
     uint_fast8_t operationValue;
-    Operation_Binary operation;
-    Operation_Unary who;
+    uint_fast16_t inspectCount;
+    Operation_Unary decide;
     struct Monkey *whenTrue;
     struct Monkey *whenFalse;
+    Item items[MONKEY_ITEMS_CAPACITY];
 } Monkey;
 
 typedef struct {
@@ -118,9 +118,9 @@ static int64_t Monkey_parse(MonkeyList list, Monkey *monkey, char *str, int64_t 
     PASSERT(CHAR == '*' || CHAR == '+');
 
     if (CHAR == '*') {
-        monkey->operation = opMul;
+        monkey->inspect = opMul;
     } else if (CHAR == '+') {
-        monkey->operation = opAdd;
+        monkey->inspect = opAdd;
     }
 
     // Skip to number or old after "* 12"
@@ -130,7 +130,7 @@ static int64_t Monkey_parse(MonkeyList list, Monkey *monkey, char *str, int64_t 
     uint64_t num = 0;
 
     if (CHAR == 'o') {
-        monkey->operation = opSqr;
+        monkey->inspect = opSqr;
         // Skip rest of "old"
         SKIP(2);
     } else {
@@ -169,38 +169,38 @@ static int64_t Monkey_parse(MonkeyList list, Monkey *monkey, char *str, int64_t 
 
     switch (num) {
         case 2:
-            monkey->who = isDivisibleBy2;
+            monkey->decide = isDivisibleBy2;
             break;
         case 3:
-            monkey->who = isDivisibleBy3;
+            monkey->decide = isDivisibleBy3;
             break;
 
         case 5:
-            monkey->who = isDivisibleBy5;
+            monkey->decide = isDivisibleBy5;
             break;
 
         case 7:
-            monkey->who = isDivisibleBy7;
+            monkey->decide = isDivisibleBy7;
             break;
 
         case 11:
-            monkey->who = isDivisibleBy11;
+            monkey->decide = isDivisibleBy11;
             break;
 
         case 13:
-            monkey->who = isDivisibleBy13;
+            monkey->decide = isDivisibleBy13;
             break;
 
         case 17:
-            monkey->who = isDivisibleBy17;
+            monkey->decide = isDivisibleBy17;
             break;
 
         case 19:
-            monkey->who = isDivisibleBy19;
+            monkey->decide = isDivisibleBy19;
             break;
 
         case 23:
-            monkey->who = isDivisibleBy23;
+            monkey->decide = isDivisibleBy23;
             break;
 
         default:
@@ -308,11 +308,11 @@ static void runPart1(Monkey *monkeys) {
             monkey->inspectCount += monkey->itemsLength;
             for (uint_fast8_t i = 0; i < monkey->itemsLength; i++) {
                 Item item = monkey->items[i];
-                item = monkey->operation(item, monkey->operationValue);
+                item = monkey->inspect(item, monkey->operationValue);
                 item /= 3;
 
                 Monkey *throwTo;
-                if (monkey->who(item)) {
+                if (monkey->decide(item)) {
                     throwTo = monkey->whenTrue;
                 } else {
                     throwTo = monkey->whenFalse;
@@ -332,10 +332,10 @@ static void runPart2(Monkey *monkeys) {
             monkey->inspectCount += monkey->itemsLength;
             for (uint_fast8_t i = 0; i < monkey->itemsLength; i++) {
                 Item item = monkey->items[i];
-                item = monkey->operation(item, monkey->operationValue);
+                item = monkey->inspect(item, monkey->operationValue);
 
                 Monkey *throwTo;
-                if (monkey->who(item)) {
+                if (monkey->decide(item)) {
                     item = item % PRIMES;
                     throwTo = monkey->whenTrue;
                 } else {
