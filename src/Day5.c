@@ -66,7 +66,7 @@ static void parseInitialStack(Stack *stack, int i, size_t rowLen, char *str)
 
 static char *printTopOfStacks(char *buffer, Stack *stacks, size_t stackCount)
 {
-    buffer += sprintf(buffer, "%*.s", 12 - (int)stackCount, "");
+    buffer += sprintf(buffer, "%*.s", 14 - (int)stackCount, "");
     for (size_t j = 0; j < stackCount; j++) {
         Stack stack = stacks[j];
         buffer += sprintf(buffer, "%c", stack.crates[stack.size - 1]);

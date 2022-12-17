@@ -17,6 +17,10 @@ extern void Day8_solve(String input, String buffer);
 extern void Day9_solve(String input, String buffer);
 extern void Day10_solve(String input, String buffer);
 extern void Day11_solve(String input, String buffer);
+extern void Day12_solve(String input, String buffer);
+extern void Day13_solve(String input, String buffer);
+extern void Day14_solve(String input, String buffer);
+extern void Day15_solve(String input, String buffer);
 
 typedef struct {
     int onlyDay;
@@ -41,7 +45,7 @@ enum Args_Error {
 };
 
 
-static char tmpBuffer[1024*32];
+static char tmpBuffer[1024*1024];
 
 static String loadInput(int day)
 {
@@ -139,6 +143,30 @@ static float runDay(int day, String input, String output, Args args)
         case 11:
             gettimeofday(&start, NULL);
             Day11_solve(input, output);
+            gettimeofday(&stop, NULL);
+            break;
+
+        case 12:
+            gettimeofday(&start, NULL);
+            Day12_solve(input, output);
+            gettimeofday(&stop, NULL);
+            break;
+
+        case 13:
+            gettimeofday(&start, NULL);
+            Day13_solve(input, output);
+            gettimeofday(&stop, NULL);
+            break;
+
+        case 14:
+            gettimeofday(&start, NULL);
+            Day14_solve(input, output);
+            gettimeofday(&stop, NULL);
+            break;
+
+        case 15:
+            gettimeofday(&start, NULL);
+            Day15_solve(input, output);
             gettimeofday(&stop, NULL);
             break;
 

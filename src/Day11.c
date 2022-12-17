@@ -5,7 +5,7 @@
 
 
 #define MONKEY_ITEMS_CAPACITY 36
-#define PRIMES (2*3*5*7*11*13*17*19);
+#define PRIMES (2*3*5*7*11*13*17*19)
 
 typedef uint64_t Item;
 
@@ -369,6 +369,6 @@ void Day11_solve(String input, String buffer)
 
     runPart2(list.monkey);
     part2 = MonkeyList_monkeyBussiness(list);
-    sprintf(buffer.data, "%12lu %12lu", part1, part2);
+    sprintf(buffer.data, "%14lu %14lu", part1, part2);
 }
 

@@ -204,7 +204,7 @@ void Day15_solve(String input, String buffer)
         }
     }
 
-    sprintf(buffer.data, "%12lu %12lu", part1, part2);
+    sprintf(buffer.data, "%14lu %14lu", part1, part2);
 }
 
 

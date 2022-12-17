@@ -83,6 +83,6 @@ void Day6_solve(String input, String buffer)
         i++;
     }
 
-    snprintf(buffer.data, buffer.length, "%12lu %12lu", part1, part2);
+    snprintf(buffer.data, buffer.length, "%14lu %14lu", part1, part2);
 }
 

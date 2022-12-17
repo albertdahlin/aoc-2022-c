@@ -115,7 +115,7 @@ void Day9_solve(String input, String buffer)
         }
     }
 
-    snprintf(buffer.data, buffer.length, "%12lu %12lu", part1, part2);
+    snprintf(buffer.data, buffer.length, "%14lu %14lu", part1, part2);
     fail:
     return;
 }

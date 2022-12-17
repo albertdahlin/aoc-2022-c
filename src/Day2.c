@@ -43,6 +43,6 @@ void Day2_solve(String input, String buffer)
         part2 += 0x762951843 >> 4*i & 0xF;
     }
 
-    sprintf(buffer.data, "%12lu %12lu", part1, part2);
+    sprintf(buffer.data, "%14lu %14lu", part1, part2);
 }
 
