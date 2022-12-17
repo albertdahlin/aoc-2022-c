@@ -68,7 +68,6 @@ void Day14_solve(String input, String buffer)
                 y1 = y1*10 + str[i] - '0';
             }
 
-            //printf("%ld %ld\n", x1, y1);
             xMin = min(xMin, x1);
             yMin = min(yMin, y1);
             xMax = max(xMax, x1);
