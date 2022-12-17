@@ -6,6 +6,8 @@
 
 
 #define push(arr, item) arr[arr##_len] = item; arr##_len += 1
+#define foreach(arr, i) for (size_t i = 0; i < arr##_len; i++)
+#define GRID_MAX 4e6
 
 typedef struct {
     int64_t x;
@@ -21,16 +23,17 @@ typedef struct {
 typedef struct {
     Point pos;
     Point beacon;
+    int64_t radius;
 } Sensor;
 
-static int64_t distance(Point p1, Point p2)
+static int64_t Point_distance(Point p1, Point p2)
 {
     return labs(p1.x - p2.x) + labs(p1.y - p2.y);
 }
 
 static int64_t Sensor_radius(Sensor sensor)
 {
-    return distance(sensor.pos, sensor.beacon);
+    return Point_distance(sensor.pos, sensor.beacon);
 }
 
 static int64_t max(int64_t a, int64_t b)
@@ -69,6 +72,7 @@ static size_t Sensor_parse(String input, Sensor *sensors)
                 sensor.pos.y = number[1];
                 sensor.beacon.x = number[2];
                 sensor.beacon.y = number[3];
+                sensor.radius = Sensor_radius(sensor);
                 push(sensors, sensor);
                 numberIndex = 0;
             } else {
@@ -87,7 +91,7 @@ static size_t Sensor_ranges(Sensor *sensors, size_t sensors_len, int64_t y, Rang
     for (size_t i = 0; i < sensors_len; i++) {
         Sensor sensor = sensors[i];
         int64_t dy = labs(sensor.pos.y - y);
-        int64_t radius = max(0, Sensor_radius(sensor) - dy);
+        int64_t radius = max(0, sensor.radius - dy);
         if (radius == 0) {
             continue;
         }
@@ -121,6 +125,28 @@ static size_t Range_unify(Range *ranges, size_t ranges_len, Range *overlap)
     push(overlap, prev);
 
     return overlap_len;
+}
+
+static bool Sensor_isInRange(Point p, Sensor *sensors, size_t sensors_len)
+{
+    if (p.x < 0 || p.x > GRID_MAX) {
+        return true;
+    }
+    if (p.y < 0 || p.y > GRID_MAX) {
+        return true;
+    }
+
+    bool isInside = false;
+    for (size_t j = 0; j < sensors_len; j++) {
+        Sensor sensor = sensors[j];
+        int64_t dist = Point_distance(p, sensor.pos);
+        if (dist <= sensor.radius) {
+            isInside = true;
+            break;
+        }
+    }
+
+    return isInside;
 }
 
 
@@ -160,17 +186,21 @@ void Day15_solve(String input, String buffer)
     // Part 2
     uint64_t part2 = 0;
 
-    for (size_t y = 0; y <= 4e6; y++) {
-        ranges_len = Sensor_ranges(sensors, sensors_len, y, ranges);
+    foreach (sensors, i) {
+        Sensor sensor = sensors[i];
+        int64_t radius = sensor.radius + 1;
 
-        qsort(ranges, ranges_len, sizeof(Range), ascendingByX);
+        Point p;
+        for (int64_t r = 0; r <= radius; r++) {
+            p.x = sensor.pos.x + radius - r;
+            p.y = sensor.pos.y + r;
 
-        overlap = &ranges[ranges_len];
-        overlap_len = Range_unify(ranges, ranges_len, overlap);
+            bool isInside = Sensor_isInRange(p, sensors, sensors_len);
 
-        if (overlap_len > 1) {
-            part2 = (overlap[0].to + 1) * 4e6 + y;
-            break;
+            if (!isInside) {
+                part2 = p.x * 4e6 + p.y;
+                break;
+            }
         }
     }
 
