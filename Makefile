@@ -25,6 +25,7 @@ build/%.dev.o: src/%.c
 build/%.opt.o: src/%.c
 	$(CC) $(CFLAGS) -DNDEBUG -Wall -c -O3 $< -o $@
 
+.PRECIOUS: build/%.test
 build/%.test: test/%.c src/%.c
 	$(CC) $(CFLAGS) -Isrc -ggdb $< -o $@
 	$@
