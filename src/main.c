@@ -22,6 +22,7 @@ extern void Day13_solve(String input, String buffer);
 extern void Day14_solve(String input, String buffer);
 extern void Day15_solve(String input, String buffer);
 extern void Day18_solve(String input, String buffer);
+extern void Day19_solve(String input, String buffer);
 
 typedef struct {
     int onlyDay;
@@ -177,6 +178,12 @@ static float runDay(int day, String input, String output, Args args)
             gettimeofday(&stop, NULL);
             break;
 
+        case 19:
+            gettimeofday(&start, NULL);
+            Day19_solve(input, output);
+            gettimeofday(&stop, NULL);
+            break;
+
 
         default:
             printf("- not implemented -");
@@ -321,7 +328,11 @@ static void printDay(Args args, int day, String output, float elapsedTimeMicroSe
             printf("|  [%d] | %8.0fµs |\n", day, elapsedTimeMicroSec);
         }
     } else {
-        printf("Day %2d: %.30s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
+        if (elapsedTimeMicroSec > 1e6) {
+            printf("Day %2d: %.30s %10.3fs\n", day, output.data, elapsedTimeMicroSec / 1e6);
+        } else {
+            printf("Day %2d: %.30s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
+        }
     }
 }
 

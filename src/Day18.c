@@ -60,13 +60,10 @@ void Day18_solve(String input, String buffer)
     int64_t part1 = 0;
     int64_t part2 = 0;
 
-    Position *position = (Position*)buffer.data;
-    size_t position_len = 0;
+    Position *positions = (Position*)buffer.data;
+    size_t positions_len = 0;
 
     for (size_t i = 0; i < input.length; i++) {
-        if (CHAR == 'Q') {
-            break;
-        }
         if (Char_isDigit(CHAR)) {
             Position pos;
             PARSE_NUMBER(pos.x);
@@ -77,20 +74,19 @@ void Day18_solve(String input, String buffer)
             i += 1;
             PARSE_NUMBER(pos.z);
             pos.z += 1;
-            push(position, pos);
+            push(positions, pos);
         }
     }
 
-    uint8_t *grid = (uint8_t*)&position[position_len];
+    uint8_t *grid = (uint8_t*)&positions[positions_len];
 
-    for (size_t i = 0; i < position_len; i++) {
-        Position pos = position[i];
+    for (size_t i = 0; i < positions_len; i++) {
+        Position pos = positions[i];
         grid[indexOf(pos.x, pos.y, pos.z)] = 4;
     }
 
-
-    for (size_t i = 0; i < position_len; i++) {
-        Position pos = position[i];
+    for (size_t i = 0; i < positions_len; i++) {
+        Position pos = positions[i];
         part1 += grid[indexOf(pos.x + 1, pos.y, pos.z)] == 0;
         part1 += grid[indexOf(pos.x - 1, pos.y, pos.z)] == 0;
         part1 += grid[indexOf(pos.x, pos.y + 1, pos.z)] == 0;
