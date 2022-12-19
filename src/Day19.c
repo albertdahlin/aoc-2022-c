@@ -98,11 +98,13 @@ static inline bool canBuyGeodeRobot(Blueprint bp, State st)
     return st.ore >= bp.geodeRobot_ore && st.obsidian >= bp.geodeRobot_obsidian;
 }
 
-static inline void buyGeodeRobot(Blueprint bp, State *st)
+static inline State buyGeodeRobot(Blueprint bp, State st)
 {
-    st->ore -= bp.geodeRobot_ore;
-    st->obsidian -= bp.geodeRobot_obsidian;
-    st->geodeRobot += 1;
+    st.ore -= bp.geodeRobot_ore;
+    st.obsidian -= bp.geodeRobot_obsidian;
+    st.geodeRobot += 1;
+
+    return st;
 }
 
 static inline State bestOf(State a, State b)
@@ -110,7 +112,7 @@ static inline State bestOf(State a, State b)
     return a.geode > b.geode ? a : b;
 }
 
-static inline State simulate(int64_t t, Blueprint bp, State state, Robot next)
+static inline State simulate(int64_t t, Blueprint bp, State state, Robot nextToBuy)
 {
     if (t <= 1) {
         state = collect(state);
@@ -119,9 +121,9 @@ static inline State simulate(int64_t t, Blueprint bp, State state, Robot next)
 
     if (canBuyGeodeRobot(bp, state)) {
         state = collect(state);
-        buyGeodeRobot(bp, &state);
+        state = buyGeodeRobot(bp, state);
     } else {
-        switch (next) {
+        switch (nextToBuy) {
             case ROBOT_ORE:
                 if (canBuyOreRobot(bp, state)) {
                     state = collect(state);
@@ -155,7 +157,7 @@ static inline State simulate(int64_t t, Blueprint bp, State state, Robot next)
             case ROBOT_GEODE:
                 if (canBuyGeodeRobot(bp, state)) {
                     state = collect(state);
-                    buyGeodeRobot(bp, &state);
+                    state = buyGeodeRobot(bp, state);
                 } else {
                     state = collect(state);
                     return simulate(t - 1, bp, state, ROBOT_GEODE);
@@ -187,6 +189,7 @@ void Day19_solve(String input, String buffer)
     Blueprint *blueprints = (Blueprint*)buffer.data;
     size_t blueprints_len = 0;
 
+    // Parse input
     for (size_t i = 0; i < input.length; i++) {
         Blueprint bp;
         SKIP_TO_DIGIT();
@@ -213,22 +216,20 @@ void Day19_solve(String input, String buffer)
         i += 10;
     }
 
-
     State start = {0};
 
     start.oreRobot = 1;
 
-    State *states = (State*)&blueprints[blueprints_len];
-
+    // part 1
     for (size_t i = 0; i < blueprints_len; i++) {
         State state = simulate(24, blueprints[i], start, ROBOT_ORE);
         state = bestOf(state, simulate(24, blueprints[i], start, ROBOT_CLAY));
         part1 += blueprints[i].id * state.geode;
-        states[i] = state;
     }
 
     part2 = 1;
 
+    // part 2
     for (size_t i = 0; i < blueprints_len; i++) {
         if (i == 3) {
             break;
@@ -240,6 +241,4 @@ void Day19_solve(String input, String buffer)
 
     sprintf(buffer.data, "%14lu %14lu", part1, part2);
 }
-
-
 
