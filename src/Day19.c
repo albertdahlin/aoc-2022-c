@@ -110,7 +110,7 @@ static inline State bestOf(State a, State b)
     return a.geode > b.geode ? a : b;
 }
 
-static inline State simulate24(int64_t t, Blueprint bp, State state, Robot next)
+static inline State simulate(int64_t t, Blueprint bp, State state, Robot next)
 {
     if (t <= 1) {
         state = collect(state);
@@ -128,7 +128,7 @@ static inline State simulate24(int64_t t, Blueprint bp, State state, Robot next)
                     state = buyOreRobot(bp, state);
                 } else {
                     state = collect(state);
-                    return simulate24(t - 1, bp, state, ROBOT_ORE);
+                    return simulate(t - 1, bp, state, ROBOT_ORE);
                 }
                 break;
 
@@ -138,7 +138,7 @@ static inline State simulate24(int64_t t, Blueprint bp, State state, Robot next)
                     state = buyClayRobot(bp, state);
                 } else {
                     state = collect(state);
-                    return simulate24(t - 1, bp, state, ROBOT_CLAY);
+                    return simulate(t - 1, bp, state, ROBOT_CLAY);
                 }
                 break;
 
@@ -148,7 +148,7 @@ static inline State simulate24(int64_t t, Blueprint bp, State state, Robot next)
                     state = buyObsidianRobot(bp, state);
                 } else {
                     state = collect(state);
-                    return simulate24(t - 1, bp, state, ROBOT_OBSIDIAN);
+                    return simulate(t - 1, bp, state, ROBOT_OBSIDIAN);
                 }
                 break;
 
@@ -158,7 +158,7 @@ static inline State simulate24(int64_t t, Blueprint bp, State state, Robot next)
                     buyGeodeRobot(bp, &state);
                 } else {
                     state = collect(state);
-                    return simulate24(t - 1, bp, state, ROBOT_GEODE);
+                    return simulate(t - 1, bp, state, ROBOT_GEODE);
                 }
                 break;
         }
@@ -167,13 +167,13 @@ static inline State simulate24(int64_t t, Blueprint bp, State state, Robot next)
 
     State best;
     if (state.oreRobot >= 4) {
-        best = simulate24(t - 1, bp, state, ROBOT_CLAY);
+        best = simulate(t - 1, bp, state, ROBOT_CLAY);
     } else {
-        best = simulate24(t - 1, bp, state, ROBOT_ORE);
-        best = bestOf(best, simulate24(t - 1, bp, state, ROBOT_CLAY));
+        best = simulate(t - 1, bp, state, ROBOT_ORE);
+        best = bestOf(best, simulate(t - 1, bp, state, ROBOT_CLAY));
     }
     if (state.clayRobot > 2) {
-        best = bestOf(best, simulate24(t - 1, bp, state, ROBOT_OBSIDIAN));
+        best = bestOf(best, simulate(t - 1, bp, state, ROBOT_OBSIDIAN));
     }
 
     return best;
@@ -221,8 +221,8 @@ void Day19_solve(String input, String buffer)
     State *states = (State*)&blueprints[blueprints_len];
 
     for (size_t i = 0; i < blueprints_len; i++) {
-        State state = simulate24(24, blueprints[i], start, ROBOT_ORE);
-        state = bestOf(state, simulate24(24, blueprints[i], start, ROBOT_CLAY));
+        State state = simulate(24, blueprints[i], start, ROBOT_ORE);
+        state = bestOf(state, simulate(24, blueprints[i], start, ROBOT_CLAY));
         part1 += blueprints[i].id * state.geode;
         states[i] = state;
     }
@@ -233,8 +233,8 @@ void Day19_solve(String input, String buffer)
         if (i == 3) {
             break;
         }
-        State state = simulate24(32, blueprints[i], start, ROBOT_ORE);
-        state = bestOf(state, simulate24(32, blueprints[i], start, ROBOT_CLAY));
+        State state = simulate(32, blueprints[i], start, ROBOT_ORE);
+        state = bestOf(state, simulate(32, blueprints[i], start, ROBOT_CLAY));
         part2 *= state.geode;
     }
 
