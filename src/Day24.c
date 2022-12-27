@@ -1,16 +1,17 @@
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "String.h"
 #include "Heap.h"
 
 
-#define indexOf(x, y) ((y) * grid.row + (x))
+#define indexOf(x, y) ((y) * g_grid.row + (x))
 
 typedef struct {
     char *data;
     uint8_t width;
     uint8_t height;
-    uint16_t time;
+    uint16_t bestTime;
     uint8_t row;
     uint8_t endX;
     uint8_t endY;
@@ -22,136 +23,172 @@ typedef struct {
     uint16_t time;
     uint8_t x;
     uint8_t y;
-} State;
+} Position;
 
 
-State *bestSoFar;
-size_t bestSoFar_len = 0;
-Grid grid = {0};
+static Position *g_bestSoFar;
 
-#define Heap_push_State(heap, item) \
-    heap[bestSoFar_len++] = (item); \
-    Heap_heapifyUp_State(heap)
+#define VISITED_SET_SIZE (1024*16)
 
-
-#define Heap_pop_State(heap) \
-    heap[0]; \
-    heap[0] = heap[--bestSoFar_len]; \
-    Heap_heapifyDown_State(heap)
+static uint32_t *g_visited;
+static Grid g_grid = {0};
 
 
-static bool alreadyAdded(State s)
+static uint32_t hashPosition(Position pos)
 {
-    for (size_t i = 0; i < bestSoFar_len; i++) {
-        State s2 = bestSoFar[i];
-        if (s.x == s2.x && s.y == s2.y && s.time == s2.time) {
-            return true;
+    /* This creates a unique hash for each possible position.
+
+    time < 1024 fits in 10 bits.
+    y < 27 fits in 5 bits (32)
+    x < 122 fits in 7 bits (128)
+
+    9 + 5 + 7 = 21 used bits.
+    */
+    uint32_t p = pos.time;
+    p <<= 5;
+    p |= pos.y;
+    p <<= 7;
+    p |= pos.x;
+
+    return p;
+}
+
+static uint32_t findIndex(uint32_t value)
+{
+    for (size_t i = 0; i < VISITED_SET_SIZE; i++) {
+        uint32_t key = (i + value) % VISITED_SET_SIZE;
+        uint32_t v2 = g_visited[key];
+
+        if (v2 == value) {
+            return key;
         }
+
+        if (v2 == 0) {
+            return key;
+        }
+    }
+
+    assert("HASH SET IS FULL" == NULL);
+    return 0;
+}
+
+static void Set_insert(Position pos)
+{
+    uint32_t value = hashPosition(pos);
+    uint32_t idx = findIndex(value);
+    g_visited[idx] = value;
+}
+
+static bool Set_isMember(Position pos)
+{
+    uint32_t value = hashPosition(pos);
+    uint32_t idx = findIndex(value);
+
+    return g_visited[idx] == value;
+}
+
+static void Set_remove(Position pos)
+{
+    uint32_t value = hashPosition(pos);
+    uint32_t idx = findIndex(value);
+
+    g_visited[idx] = 0;
+}
+
+static inline uint16_t Position_distanceToGoal(Position pos)
+{
+    // This turns out to be faster than using abs()
+    if (g_grid.endX > g_grid.startX) {
+        return g_grid.endX - pos.x + g_grid.endY - pos.y;
+    }
+
+    return pos.x + pos.y;
+}
+
+static inline bool Position_isAtStart(Position pos)
+{
+    return (pos.x == g_grid.startX && pos.y == g_grid.startY);
+}
+
+static inline bool Position_isAtEnd(Position pos)
+{
+    return (pos.x == g_grid.endX && pos.y == g_grid.endY);
+}
+
+static inline bool Position_isOutside(Position pos)
+{
+    if (pos.x < 1 || pos.x >= g_grid.width - 1) {
+        return true;
+    }
+
+    if (pos.y < 1 || pos.y >= g_grid.height - 1) {
+        return true;
     }
 
     return false;
 }
 
-static uint16_t stateScore(State s)
+static inline uint16_t Position_score(Position pos)
 {
-    return s.time + (abs(grid.endX - s.x) + abs(grid.endY - s.y));
+    return 2*pos.time + Position_distanceToGoal(pos);
 }
 
-static void Heap_heapifyUp_State(State *heap)
+static int Position_compare(void *p1, void*p2)
 {
-    size_t idx = bestSoFar_len - 1;
-    size_t parent = Heap_parentIdx(idx);
+    Position *s1 = (Position*)p1;
+    Position *s2 = (Position*)p2;
 
-    while (idx > 0 && stateScore(heap[idx]) < stateScore(heap[parent])) {
-        State i = heap[parent];
-        heap[parent] = heap[idx];
-        heap[idx] = i;
-        idx = parent;
-        parent = Heap_parentIdx(idx);
-    }
+    return Position_score(*s1) - Position_score(*s2);
 }
 
 
-static void Heap_heapifyDown_State(State *heap)
+static inline Position position(uint8_t x, uint8_t y, uint16_t time)
 {
-    size_t idx = 0;
-    size_t left = Heap_childLeftIdx(idx);
-    size_t right = Heap_childRightIdx(idx);
-    size_t smaller = 0;
-    size_t len = bestSoFar_len;
-
-    while (left < len) {
-        if (stateScore(heap[left]) < stateScore(heap[right])) {
-            smaller = left;
-        } else {
-            smaller = right;
-        }
-
-        if (stateScore(heap[idx]) < stateScore(heap[smaller])) {
-            break;
-        }
-        State i = heap[idx];
-        heap[idx] = heap[smaller];
-        heap[smaller] = i;
-        idx = smaller;
-        left = Heap_childLeftIdx(idx);
-        right = Heap_childRightIdx(idx);
-    }
+    return (Position){ time, x, y };
 }
 
-static State state(uint8_t x, uint8_t y, uint16_t time)
+static bool isClearGround(Position pos)
 {
-    return (State){ time, x, y };
-}
-
-static bool isFree(uint8_t x, uint8_t y, uint16_t time)
-{
-    if (!(x == grid.startX && y == grid.startY)) {
-        if (x < 1 || x >= grid.width - 1) {
-            return false;
-        }
-
-        if (y < 1 || y >= grid.height - 1) {
-            return false;
-        }
+    if (Position_isOutside(pos) && !Position_isAtStart(pos)) {
+        return false;
     }
 
-    uint16_t bh = grid.height - 2;
+    uint16_t insideHeight = g_grid.height - 2;
 
     // scan column
-    for (uint16_t by = 1; by < (grid.height - 1); by++) {
-        char c = grid.data[indexOf(x, by)];
+    for (uint16_t insideY = 1; insideY < (g_grid.height - 1); insideY++) {
+        char c = g_grid.data[indexOf(pos.x, insideY)];
         uint16_t yt;
 
         if (c == '^') {
-            yt = ((bh-1)*time + by - 1) % bh + 1;
+            yt = ((insideHeight-1)*pos.time + insideY - 1) % insideHeight + 1;
         } else if (c == 'v') {
-            yt = (time + by - 1) % bh + 1;
+            yt = (pos.time + insideY - 1) % insideHeight + 1;
         } else {
             continue;
         }
 
-        if (yt == y) {
+        if (yt == pos.y) {
             return false;
         }
     }
 
-    uint16_t bw = grid.width - 2;
+    uint16_t insideWidth = g_grid.width - 2;
 
     // scan row
-    for (uint16_t bx = 1; bx < (grid.width - 1); bx++) {
-        char c = grid.data[indexOf(bx, y)];
+    for (uint16_t insideX = 1; insideX < (g_grid.width - 1); insideX++) {
+        char c = g_grid.data[indexOf(insideX, pos.y)];
         uint16_t xt;
 
         if (c == '<') {
-            xt = ((bw-1)*time + bx - 1) % bw + 1;
+            xt = ((insideWidth-1)*pos.time + insideX - 1) % insideWidth + 1;
         } else if (c == '>') {
-            xt = (time + bx - 1) % bw + 1;
+            xt = (pos.time + insideX - 1) % insideWidth + 1;
         } else {
             continue;
         }
 
-        if (xt == x) {
+        if (xt == pos.x) {
             return false;
         }
     }
@@ -160,90 +197,127 @@ static bool isFree(uint8_t x, uint8_t y, uint16_t time)
 }
 
 
-static void addIfNew(State s)
+static void addToQueue(Position pos)
 {
-    if (alreadyAdded(s)) {
+    if (Set_isMember(pos)) {
         return;
     }
-    if (isFree(s.x, s.y, s.time)) {
-        Heap_push_State(bestSoFar, s);
+
+    if (!isClearGround(pos)) {
+        return;
     }
+
+    Set_insert(pos);
+    Heap_push(g_bestSoFar, pos);
 }
 
 static void tick()
 {
-    State s = Heap_pop_State(bestSoFar);
+    Position pos = Heap_pop(g_bestSoFar);
+    Set_remove(pos);
 
-    s.time += 1;
+    pos.time += 1;
 
-    if (s.x == grid.endX && s.y == grid.endY) {
-        if (s.time < grid.time) {
-            grid.time = s.time;
-        }
+    if (Position_isAtEnd(pos)) {
+        g_grid.bestTime = pos.time < g_grid.bestTime ? pos.time : g_grid.bestTime;
 
         return;
     }
 
-    if ((stateScore(s)) >= grid.time) {
+    if ((Position_score(pos)) >= g_grid.bestTime) {
         return;
     }
 
-    addIfNew(state(s.x, s.y + 1, s.time));
-    addIfNew(state(s.x, s.y - 1, s.time));
+    addToQueue(position(pos.x, pos.y + 1, pos.time));
+    addToQueue(position(pos.x, pos.y - 1, pos.time));
 
-    addIfNew(state(s.x + 1, s.y, s.time));
-    addIfNew(state(s.x - 1, s.y, s.time));
+    addToQueue(position(pos.x + 1, pos.y, pos.time));
+    addToQueue(position(pos.x - 1, pos.y, pos.time));
 
-    addIfNew(s);
+    addToQueue(pos);
 }
 
-static uint64_t run(
+static uint64_t shortestPath(
     uint8_t startX,
     uint8_t startY,
     uint8_t endX,
     uint8_t endY,
     uint16_t time
 ) {
-    bestSoFar_len = 0;
-    grid.time = 0xFFFF;
-    grid.endX = endX;
-    grid.endY = endY;
-    grid.startX = startX;
-    grid.startY = startY;
-    Heap_push_State(bestSoFar, state(startX, startY, time));
+    g_grid.bestTime = 0xFFFF;
+    g_grid.endX = endX;
+    g_grid.endY = endY;
+    g_grid.startX = startX;
+    g_grid.startY = startY;
+    Heap_truncate(g_bestSoFar);
+    Heap_push(g_bestSoFar, position(startX, startY, time));
 
-    while (bestSoFar_len > 0) {
+    while (Heap_length(g_bestSoFar) > 0) {
         tick();
     }
 
-    return grid.time;
+    return g_grid.bestTime;
+}
+
+static void initGrid(String input)
+{
+    g_grid.data = input.data;
+
+    for (size_t i = 0; i < 200; i++) {
+        if (input.data[i] == '\n') {
+            g_grid.width = i;
+            break;
+        }
+    }
+
+    if (g_grid.width == 122) {
+        g_grid.height = 27;
+    } else {
+        // Test grid
+        g_grid.height = 6;
+    }
+
+    g_grid.row = g_grid.width + 1;
 }
 
 void Day24_solve(String input, String buffer)
 {
     uint64_t part1 = 0;
     uint64_t part2 = 0;
-    grid.data = input.data;
 
-    for (size_t i = 0; i < 200; i++) {
-        if (input.data[i] == '\n') {
-            grid.width = i;
-            break;
-        }
-    }
+    g_visited = (uint32_t*)buffer.data;
+    g_bestSoFar = Heap_fromPtr(
+        sizeof(Position),
+        Position_compare,
+        &g_visited[VISITED_SET_SIZE],
+        (sizeof(uint32_t) * VISITED_SET_SIZE - buffer.length)
+    );
 
-    if (grid.width == 122) {
-        grid.height = 27;
-    } else {
-        grid.height = 6;
-    }
+    initGrid(input);
 
-    grid.row = grid.width + 1;
+    uint64_t time = 0;
 
-    bestSoFar = (State*)buffer.data;
-    part1 = run(1, 0, grid.width - 2, grid.height - 2, 0);
-    part2 = run(grid.width - 2, grid.height - 1, 1, 1, part1);
-    part2 = run(1, 0, grid.width - 2, grid.height - 2, part2);
+    // From start to end
+    time = shortestPath(
+        1, 0,
+        g_grid.width - 2, g_grid.height - 2,
+        time
+    );
+    part1 = time;
+
+    // From end to start
+    time = shortestPath(
+        g_grid.width - 2, g_grid.height - 1,
+        1, 1,
+        time
+    );
+    // from start to end
+    time = shortestPath(
+        1, 0,
+        g_grid.width - 2, g_grid.height - 2,
+        time
+    );
+    part2 = time;
 
     sprintf(buffer.data, "%14lu %14lu", part1, part2);
 }

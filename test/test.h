@@ -3,7 +3,7 @@
 #include <String.h>
 
 #define TEST_INIT() \
-    char buffer[1024*32] = {0}; \
+    char buffer[1024*1024] = {0}; \
     String output = (String){ \
         buffer, \
         sizeof(buffer) \
