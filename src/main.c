@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <sys/time.h>
 #include "String.h"
+#include <locale.h>
 
 
 extern void Day1_solve(String input, String buffer);
@@ -316,21 +317,21 @@ static void printError(Args args)
 static void printHeader(Args args)
 {
     if (args.asMarkdown) {
-        printf("|  Day |    Time    |\n");
-        printf("| ---: | ---------: |\n");
+        printf("|  Day |     Time     |\n");
+        printf("| ---: | -----------: |\n");
     }
 }
 
 static void printFooter(Args args, float elapsedTimeMicroSec)
 {
     if (args.asMarkdown) {
-        printf("|  Sum | %8.0fµs |\n", elapsedTimeMicroSec);
+        printf("|  Sum | %'10.0fµs |\n", elapsedTimeMicroSec);
         return;
     } else {
         if (elapsedTimeMicroSec < 1000) {
-            printf("\nTotal time: %.0fµs", elapsedTimeMicroSec);
+            printf("\nTotal time: %'.0fµs", elapsedTimeMicroSec);
         } else {
-            printf("\nTotal time: %.1fms", elapsedTimeMicroSec / 1000);
+            printf("\nTotal time: %'.1fms", elapsedTimeMicroSec / 1000);
         }
     }
 
@@ -344,15 +345,15 @@ static void printDay(Args args, int day, String output, float elapsedTimeMicroSe
 {
     if (args.asMarkdown) {
         if (day > 9) {
-            printf("| [%d] | %8.0fµs |\n", day, elapsedTimeMicroSec);
+            printf("| [%d] | %'10.0fµs |\n", day, elapsedTimeMicroSec);
         } else {
-            printf("|  [%d] | %8.0fµs |\n", day, elapsedTimeMicroSec);
+            printf("|  [%d] | %'10.0fµs |\n", day, elapsedTimeMicroSec);
         }
     } else {
         if (elapsedTimeMicroSec > 1e6) {
-            printf("Day %2d: %.30s %10.3fs\n", day, output.data, elapsedTimeMicroSec / 1e6);
+            printf("Day %2d: %.30s %'10.3fs\n", day, output.data, elapsedTimeMicroSec / 1e6);
         } else {
-            printf("Day %2d: %.30s %10.0fµs\n", day, output.data, elapsedTimeMicroSec);
+            printf("Day %2d: %.30s %'10.0fµs\n", day, output.data, elapsedTimeMicroSec);
         }
     }
 }
@@ -392,6 +393,7 @@ static float repeatDay(int day, String input, Args args)
 int main(int argc, char *argv[])
 {
     Args args = parseArgs(argc, argv);
+    setlocale( LC_ALL, "en_US.UTF-8" );
 
     if (args.error) {
         printError(args);

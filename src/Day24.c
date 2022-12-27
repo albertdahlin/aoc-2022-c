@@ -1,6 +1,5 @@
 #include <inttypes.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include "String.h"
 #include "Heap.h"
 
@@ -28,71 +27,48 @@ typedef struct {
 
 static Position *g_bestSoFar;
 
-#define VISITED_SET_SIZE (1024*16)
+#define VISITED_SET_SIZE (1024*4)
 
-static uint32_t *g_visited;
+static uint16_t *g_visited;
 static Grid g_grid = {0};
 
 
-static uint32_t hashPosition(Position pos)
+static uint16_t hashPosition(Position pos)
 {
     /* This creates a unique hash for each possible position.
 
-    time < 1024 fits in 10 bits.
-    y < 27 fits in 5 bits (32)
-    x < 122 fits in 7 bits (128)
+    y < 27, fits in 5 bits (32)
+    x < 122, fits in 7 bits (128)
 
-    9 + 5 + 7 = 21 used bits.
+    5 + 7 = 12 used bits (4069)
+    27*122 = 3294
     */
-    uint32_t p = pos.time;
+
+    uint16_t p = pos.x;
     p <<= 5;
     p |= pos.y;
-    p <<= 7;
-    p |= pos.x;
 
     return p;
 }
 
-static uint32_t findIndex(uint32_t value)
-{
-    for (size_t i = 0; i < VISITED_SET_SIZE; i++) {
-        uint32_t key = (i + value) % VISITED_SET_SIZE;
-        uint32_t v2 = g_visited[key];
-
-        if (v2 == value) {
-            return key;
-        }
-
-        if (v2 == 0) {
-            return key;
-        }
-    }
-
-    assert("HASH SET IS FULL" == NULL);
-    return 0;
-}
-
 static void Set_insert(Position pos)
 {
-    uint32_t value = hashPosition(pos);
-    uint32_t idx = findIndex(value);
-    g_visited[idx] = value;
+    uint16_t idx = hashPosition(pos);
+    g_visited[idx] = pos.time;
 }
 
-static bool Set_isMember(Position pos)
+static bool Set_member(Position pos)
 {
-    uint32_t value = hashPosition(pos);
-    uint32_t idx = findIndex(value);
+    uint16_t idx = hashPosition(pos);
 
-    return g_visited[idx] == value;
+    return pos.time >= g_visited[idx];
 }
 
 static void Set_remove(Position pos)
 {
-    uint32_t value = hashPosition(pos);
-    uint32_t idx = findIndex(value);
+    uint16_t idx = hashPosition(pos);
 
-    g_visited[idx] = 0;
+    g_visited[idx] = -1;
 }
 
 static inline uint16_t Position_distanceToGoal(Position pos)
@@ -141,16 +117,15 @@ static int Position_compare(void *p1, void*p2)
     return Position_score(*s1) - Position_score(*s2);
 }
 
-
 static inline Position position(uint8_t x, uint8_t y, uint16_t time)
 {
     return (Position){ time, x, y };
 }
 
-static bool isClearGround(Position pos)
+static bool isBlocked(Position pos)
 {
     if (Position_isOutside(pos) && !Position_isAtStart(pos)) {
-        return false;
+        return true;
     }
 
     uint16_t insideHeight = g_grid.height - 2;
@@ -169,7 +144,7 @@ static bool isClearGround(Position pos)
         }
 
         if (yt == pos.y) {
-            return false;
+            return true;
         }
     }
 
@@ -189,21 +164,17 @@ static bool isClearGround(Position pos)
         }
 
         if (xt == pos.x) {
-            return false;
+            return true;
         }
     }
 
-    return true;
+    return false;
 }
 
 
 static void addToQueue(Position pos)
 {
-    if (Set_isMember(pos)) {
-        return;
-    }
-
-    if (!isClearGround(pos)) {
+    if (Set_member(pos) || isBlocked(pos)) {
         return;
     }
 
@@ -237,7 +208,7 @@ static void tick()
     addToQueue(pos);
 }
 
-static uint64_t shortestPath(
+static uint16_t shortestPath(
     uint8_t startX,
     uint8_t startY,
     uint8_t endX,
@@ -285,17 +256,21 @@ void Day24_solve(String input, String buffer)
     uint64_t part1 = 0;
     uint64_t part2 = 0;
 
-    g_visited = (uint32_t*)buffer.data;
+    g_visited = (uint16_t*)buffer.data;
+    for (size_t i = 0; i < VISITED_SET_SIZE; i++) {
+        g_visited[i] = -1;
+    }
+
     g_bestSoFar = Heap_fromPtr(
         sizeof(Position),
         Position_compare,
         &g_visited[VISITED_SET_SIZE],
-        (sizeof(uint32_t) * VISITED_SET_SIZE - buffer.length)
+        (sizeof(uint16_t) * VISITED_SET_SIZE - buffer.length)
     );
 
     initGrid(input);
 
-    uint64_t time = 0;
+    uint16_t time = 0;
 
     // From start to end
     time = shortestPath(

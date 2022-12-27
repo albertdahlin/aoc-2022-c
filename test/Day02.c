@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "test.h"
-#include <Day2.c>
+#include <Day02.c>
 
 
 int main()
