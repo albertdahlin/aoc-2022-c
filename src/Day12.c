@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "String.h"
-#include <unistd.h>
+#include "AStar.h"
+#include "Heap.h"
 
 
 typedef struct {
@@ -11,112 +12,127 @@ typedef struct {
     int64_t width;
     int64_t height;
     int64_t row;
+    uint8_t targetX;
+    uint8_t targetY;
 } Grid;
 
-typedef struct {
-    int64_t x;
-    int64_t y;
-} Point;
+static Grid g_grid;
+static Node g_tmp[4];
 
-
-#define at(x, y) grid.data[((y)*grid.row + (x))]
-#define visit(x, y) visited[((y)*grid.row + (x))]
-
-static Point P(int64_t x, int64_t y)
+static inline uint32_t pack(uint8_t x, uint8_t y)
 {
-    return (Point){ x, y };
+    /*
+
+    x < 167, 8 bit
+    y < 41, 6 bit
+
+    14 bit total. (16384)
+
+    41x167 = 6847
+
+    */
+    uint32_t p = y;
+    p <<= 8;
+    p |= x;
+
+    return p;
 }
 
-static void draw(Grid grid, Point pos, Point target, uint32_t *visited)
+static uint32_t distanceToTarget(uint32_t id)
 {
-    printf("\e[1;1H");
-    char *str = grid.data;
-    uint32_t *out = visited;
-    for (size_t row = 0; row < grid.height; row++) {
-        for (size_t col = 0; col < grid.width; col++) {
-            size_t i = row*grid.row + col;
-            if (pos.x == col && pos.y == row) {
-                printf("#");
-            } else if (target.x == col && target.y == row) {
-                printf("E");
-            } else if (str[i] == 'S') {
-                printf("S");
-            } else if (out[i] < 0xFFFFFFFF) {
-                //putchar(str[i] & 0b11011111);
-                printf("\e[90m%c\e[0m", str[i]);
-            } else {
-                putchar(str[i]);
-            }
-        }
-        printf("\n");
-    }
-    printf("\n");
-    //usleep(1600);
+    uint8_t x = id & 0xFF;
+    uint8_t y = id >> 8;
+
+    return abs(g_grid.targetX - x) + abs(g_grid.targetY - y);
 }
 
-static uint32_t hscore(Point pos, Point target)
+#define indexOf(x, y) ((y)*g_grid.row + (x))
+
+#define addIfHigher(x, y) \
+    node.id = pack((x), (y)); \
+    if (g_grid.data[indexOf(x, y)] <= height) { \
+        g_tmp[list.length] = node; \
+        list.length += 1; \
+    }
+
+static AStar_List maxOneHigher(uint32_t id)
 {
-    return abs(pos.x - target.x) + abs(pos.y - target.y);
+    uint8_t x = id & 0xFF;
+    uint8_t y = id >> 8;
+
+    AStar_List list = {0};
+    Node node = {0};
+    node.weight = 1;
+    uint8_t height = g_grid.data[indexOf(x, y)] + 1;
+
+
+    if (x < (g_grid.width - 1)) {
+        addIfHigher(x + 1, y);
+    }
+
+    if (x > 0) {
+        addIfHigher(x - 1, y);
+    }
+
+    if (y < (g_grid.height - 1)) {
+        addIfHigher(x, y + 1);
+    }
+
+    if (y > 0) {
+        addIfHigher(x, y - 1);
+    }
+
+    list.node = g_tmp;
+
+    return list;
 }
 
-static void findTarget(Grid grid, Point pos, Point target, uint32_t score, uint32_t *visited)
+#define addIfLower(x, y) \
+    node.id = pack((x), (y)); \
+    if (g_grid.data[indexOf(x, y)] >= height) { \
+        g_tmp[list.length] = node; \
+        list.length += 1; \
+    }
+
+static AStar_List maxOneLower(uint32_t id)
 {
-    int8_t up = 0x8F;
-    int8_t down = 0x8F;
-    int8_t left = 0x8F;
-    int8_t right = 0x8F;
+    uint8_t x = id & 0xFF;
+    uint8_t y = id >> 8;
 
-    int8_t m = at(pos.x, pos.y);
+    AStar_List list = {0};
+    Node node = {0};
+    node.weight = 1;
+    uint8_t height = g_grid.data[indexOf(x, y)] - 1;
 
-    if (m == 'S') {
-        m = 'a';
+
+    if (x < (g_grid.width - 1)) {
+        addIfLower(x + 1, y);
     }
 
-    if (m == 'a') {
-        //score = 0;
+    if (x > 0) {
+        addIfLower(x - 1, y);
     }
 
-    if (score >= visit(pos.x, pos.y)) {
-        return;
+    if (y < (g_grid.height - 1)) {
+        addIfLower(x, y + 1);
     }
 
-    visit(pos.x, pos.y) = score;
-
-    if (m == 'E') {
-        printf("FOUND %ld,%ld : %c\n", pos.x, pos.y, m);
+    if (y > 0) {
+        addIfLower(x, y - 1);
     }
 
-    if (pos.x > 0) left = at(pos.x - 1, pos.y);
-    if (pos.x < grid.width) right = at(pos.x + 1, pos.y);
-    if (pos.y > 0) up = at(pos.x, pos.y - 1);
-    if (pos.y < grid.height) down = at(pos.x, pos.y + 1);
-    //printf("m %ld,%ld : %c %c %c %c\n", pos.x, pos.y, up, right, down, left);
+    list.node = g_tmp;
 
-    int8_t du = up - m;
-    int8_t dr = right - m;
-    int8_t dd = down - m;
-    int8_t dl = left - m;
+    return list;
+}
 
-    if (dr <= 1) {
-        findTarget(grid, P(pos.x + 1, pos.y), target, score + 1, visited);
-        //printf("  v %ld,%ld : %c \n", pos.x, pos.y, down);
-    }
+static uint32_t isHeightEqA(Id id)
+{
+    uint8_t x = id & 0xFF;
+    uint8_t y = id >> 8;
+    uint8_t height = g_grid.data[indexOf(x, y)];
 
-    if (du <= 1) {
-        findTarget(grid, P(pos.x, pos.y - 1), target, score + 1, visited);
-        //printf("  ^ %ld,%ld : %c \n", pos.x, pos.y, up);
-    }
-
-
-    if (dd <= 1) {
-        findTarget(grid, P(pos.x, pos.y + 1), target, score + 1, visited);
-        //printf("  v %ld,%ld : %c \n", pos.x, pos.y, down);
-    }
-
-    if (dl <= 1) {
-        //printf("  < %ld,%ld : %c \n", pos.x, pos.y, left);
-        findTarget(grid, P(pos.x - 1, pos.y), target, score + 1, visited);
-    }
+    return (height == 'a');
 }
 
 
@@ -129,53 +145,59 @@ void Day12_solve(String input, String buffer)
     uint64_t height = 0;
 
     char *str = input.data;
-    uint32_t *out = (uint32_t*)buffer.data;
-    Point start, target;
-    assert((input.length * 4) < buffer.length);
+    char *out = buffer.data;
+    uint64_t startX = 0;
+    uint64_t startY = 0;
+    uint64_t targetX = 0;
+    uint64_t targetY = 0;
 
     for (size_t i = 0; i < input.length; i++) {
+        out[i] = str[i];
         if (width == 0 && str[i] == '\n') width = i;
         if (str[i] == '\n') height++;
         if (str[i] == 'S') {
-            str[i] = 'z';
-            start.x = i;
-        }
-        if (str[i] == 'a') {
-            //start.x = i;
+            startX = i;
+            out[i] = 'a';
         }
         if (str[i] == 'E') {
-            target.x = i;
-            str[i] = 'z';
+            targetX = i;
+            out[i] = 'z';
         }
-        out[i] = 0xFFFFFFFF;
     }
+    g_grid.data     = out;
+    g_grid.width    = width;
+    g_grid.height   = height;
+    g_grid.row      = width + 1;
 
-    start.y = start.x / (width+1);
-    start.x = start.x % (width+1);
-    target.y = target.x / (width+1);
-    target.x = target.x % (width+1);
+    startY         = startX / (width+1);
+    startX         = startX % (width+1);
+    targetY        = targetX / (width+1);
+    targetX        = targetX % (width+1);
+    g_grid.targetX = targetX;
+    g_grid.targetY = targetY;
 
-    Grid grid = {0};
-    grid.data = input.data;
-    grid.width = width;
-    grid.height = height;
-    grid.row = width + 1;
+    AStar a = AStar_create(
+        distanceToTarget,
+        maxOneHigher,
+        16384
+    );
 
-    //start.y += 1;
-    //
-    //printf("\[1;1H\e[2J");
+    part1 = AStar_run(
+        pack(startX, startY),
+        pack(targetX, targetY),
+        a
+    );
 
-    findTarget(grid, start, target, 0, out);
+    AStar_init(&a);
+    a.heuristic = isHeightEqA;
+    a.neighbor = maxOneLower;
 
-    part1 = out[target.y*grid.row + target.x];
+    part2 = AStar_floodUntil(
+        pack(targetX, targetY),
+        a
+    );
 
-    //printf("%lux%lu\n", width, height);
-    //findTarget(grid, P(1, 1), target);
-
-    /*
-    printf("%lu,%lu\n", start.x, start.y);
-    printf("%lu,%lu\n", target.x, target.y);
-    */
+    AStar_free(a);
 
     sprintf(buffer.data, "%14lu %14lu", part1, part2);
 }
